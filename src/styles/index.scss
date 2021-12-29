@@ -1,0 +1,39 @@
+@import "icon";
+@import "normalize.css";
+
+html, body{
+  background-color: #FAFAFA;
+}
+.tm-nav-bar{
+  .van-nav-bar__title{
+    color: #212121;
+  }
+  .van-icon{
+    color: #212121 !important;
+  }
+}
+
+.flex{
+  display: flex;
+}
+.flex-col{
+  @extend .flex;
+  flex-direction: column;
+}
+.j-center{
+  justify-content: center;
+}
+.a-center{
+  align-items: center;
+}
+.center{
+  @extend .j-center;
+  @extend .a-center;
+}
+.text-center{
+  text-align: center;
+}
+.border-row{
+  border-left: 1px solid #DCDCDC;
+  border-right: 1px solid #DCDCDC;
+}
