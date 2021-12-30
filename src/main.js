@@ -3,8 +3,12 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 // 加载全局样式
-import '@/plugins/vant'
+import Vant from 'vant'
+import 'vant/lib/index.css'
 import './styles/index.scss'
+import 'vant/lib/icon/local.css'
+
+Vue.use(Vant)
 
 Vue.config.productionTip = false
 

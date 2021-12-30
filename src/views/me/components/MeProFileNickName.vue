@@ -1,7 +1,7 @@
 <template>
   <div>
     <normal-nav title="修改昵称" :finish="modifyNickName"></normal-nav>
-    <van-field v-model="user.nickName" clearable/>
+    <van-field v-model="user.nickname" clearable/>
   </div>
 </template>
 

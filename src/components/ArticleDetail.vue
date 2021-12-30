@@ -7,16 +7,18 @@
       @click-left="$router.back()"
     />
     <article-list-single :article="article"></article-list-single>
+    <comment-list></comment-list>
   </div>
 </template>
 
 <script>
 import { simuArticleList } from '@/data/ArticlesData'
 import ArticleListSingle from '@/components/ArticleListSingle'
+import CommentList from './CommentList'
 
 export default {
   name: 'article-detail',
-  components: { ArticleListSingle },
+  components: { CommentList, ArticleListSingle },
   created () {
     this.initArticle()
   },

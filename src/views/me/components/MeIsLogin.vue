@@ -39,7 +39,7 @@
             <van-button
               class="edit-btn"
               round
-              to="/user/profile"
+              to="/me/profile"
               block>
               编辑信息
             </van-button>
@@ -75,9 +75,6 @@ export default {
     meHome,
     meArticle,
     meHistory
-  },
-  mounted () {
-    console.log(this.user)
   },
   props: {
     user: {

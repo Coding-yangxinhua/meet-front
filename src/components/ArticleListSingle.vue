@@ -7,7 +7,7 @@
           <van-image round fit="cover" :src="article.userInfo.avatar"/>
         </van-col>
         <van-col span="12" class="msg-info">
-          <div class="user-name">{{ article.userInfo.nickName }}</div>
+          <div class="user-name">{{ article.userInfo.nickname }}</div>
           <div class="date" >{{ formatDate }}</div>
         </van-col>
         <van-col span="7" class="extra flex">

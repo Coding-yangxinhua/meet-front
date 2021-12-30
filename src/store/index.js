@@ -8,16 +8,47 @@ const TOKEN_KEY = 'token'
 
 export default new Vuex.Store({
   state: {
-    token: getItem(TOKEN_KEY)
+    position: 0,
+    token: getItem(TOKEN_KEY),
+    tempAlbum: {
+      albumTitle: '',
+      privateInfo: {
+        level: 0,
+        name: '公开'
+      }
+    }
   },
   mutations: {
+    setPosition (state, pos) {
+      state.position = pos
+    },
+    setAlbum (state, album) {
+      state.tempAlbum = album
+    },
+    resetAlbum (state) {
+      state.tempAlbum = {
+        albumTitle: '',
+        privateInfo: {
+          level: 0,
+          name: '公开'
+        }
+      }
+    },
     setToken (state, token) {
-      this.state.token = token
+      state.token = token
       setItem(TOKEN_KEY, token)
     },
     removeToken (state) {
-      this.state.token = null
+      state.token = null
       removeItem(TOKEN_KEY)
+    }
+  },
+  getters: {
+    getTempAlbum (state) {
+      return state.tempAlbum
+    },
+    getPosition (state) {
+      return state.position
     }
   },
   actions: {

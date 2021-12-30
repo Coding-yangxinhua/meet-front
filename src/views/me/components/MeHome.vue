@@ -1,7 +1,7 @@
 <template>
   <div class="my-container">
     <van-grid class="nav-grid" :column-num="3" square :gutter="10">
-      <van-grid-item class="nav-grid-item" icon-prefix="iconfont icon" icon="picture" text="相册"/>
+      <van-grid-item @click="toAlbum" class="nav-grid-item" icon-prefix="iconfont icon" icon="picture" text="相册"/>
       <van-grid-item class="nav-grid-item" icon-prefix="iconfont icon" icon="memorial" text="备忘录"/>
       <van-grid-item class="nav-grid-item" icon-prefix="iconfont icon" icon="time" text="时间表"/>
     </van-grid>
@@ -25,6 +25,16 @@ export default {
     })
   },
   methods: {
+    // 去相册
+    toAlbum () {
+      this.$router.push({
+        name: 'album',
+        params: {
+          userId: null
+        }
+      })
+    },
+    // 退回登录
     loginOutConfirm () {
       Dialog.confirm({
         title: 'TO MEET',

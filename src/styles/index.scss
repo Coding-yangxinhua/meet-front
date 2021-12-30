@@ -2,17 +2,34 @@
 @import "normalize.css";
 
 html, body{
-  background-color: #FAFAFA;
+  //background-color: #FAFAFA;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #f7f7f7;
 }
-.tm-nav-bar{
-  .van-nav-bar__title{
-    color: #212121;
+.van-nav-bar {
+  .van-icon {
+    color: #323233;
   }
-  .van-icon{
-    color: #212121 !important;
+  .van-nav-bar__title {
+    color: black;
+    font-size: 15pt;
+  }
+  .van-nav-bar__arrow {
+    font-size: 22px;
+  }
+  .van-nav-bar__left {
+    font-size: 18px;
+  }
+  .van-nav-bar__right {
+    font-size: 18px;
+  }
+  .van-nav-bar__text {
+    color: #323233;
   }
 }
-
 .flex{
   display: flex;
 }
