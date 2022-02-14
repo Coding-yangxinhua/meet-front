@@ -9,7 +9,18 @@ html, body{
   height: 100%;
   background-color: #f7f7f7;
 }
+#app {
+  height: 100%;
+  width: 100%;
+}
+.special-blue {
+  color: #438ca3;
+}
+.special-pink {
+  color: #e85b6d;
+}
 .van-nav-bar {
+  z-index: 999;
   .van-icon {
     color: #323233;
   }
@@ -53,4 +64,33 @@ html, body{
 .border-row{
   border-left: 1px solid #DCDCDC;
   border-right: 1px solid #DCDCDC;
+}
+
+.active-color {
+  color: orangered !important;
+}
+
+.hidden-line1 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.input-box {
+  font-size: 15px;
+  .van-cell__value {
+    background-color: #f0f2f3;
+    border-radius: 5px;
+    padding: 5px 10px 5px 15px;
+  }
+  padding: 10px 0;
+}
+
+.send-btn {
+  border-radius: 999px;
+  background-color: #c8c9cc;
+}
+.send-btn-active {
+  background-color: #51a7c3;
+  color: white;
 }

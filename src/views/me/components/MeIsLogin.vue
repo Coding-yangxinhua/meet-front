@@ -1,7 +1,7 @@
 <template>
   <div class="meIsLogin">
     <van-nav-bar class="tm-nav-bar"
-                 :title="user.nickName"
+                 :title="user.nickname"
     />
     <div class="base">
       <!--  用户信息框  -->

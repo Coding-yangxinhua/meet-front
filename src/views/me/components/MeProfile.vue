@@ -3,18 +3,26 @@
     <van-nav-bar class="tm-nav-bar" left-arrow @click-left="$router.back()" title="我的资料"/>
     <div>
       <van-cell-group>
-        <van-cell title="头像">
+
+        <van-cell class="avatar-cell"
+                  title="头像"
+        >
           <template #right-icon>
-            <div>
-              <van-image
-                width="55"
-                height="55"
-                round
-                :src="user.avatar"/>
-            </div>
+            <van-uploader
+              max-count="1"
+            >
+              <div class="flex center">
+                <van-image
+                  width="55"
+                  height="55"
+                  round
+                  :src="user.avatar"/>
+                <van-icon class="van-cell__right-icon"  name="arrow" />
+              </div>
+            </van-uploader>
           </template>
         </van-cell>
-        <van-cell title="昵称" is-link :value="user.nickName" to="/user/profile/nickName"/>
+        <van-cell title="昵称" is-link :value="user.nickname" @click= "toNicknameModified"/>
         <van-cell title="性别" @click="genderProp.showGenderPicker=true" is-link :value="gender" />
         <van-popup v-model="genderProp.showGenderPicker" round position="bottom">
           <van-picker
@@ -96,6 +104,15 @@ export default {
     }
   },
   methods: {
+    // 跳转到名称修改页面
+    toNicknameModified () {
+      this.$router.push({
+        name: 'me-profile-nickname',
+        params: {
+          nickname: this.user.nickname
+        }
+      })
+    },
     onCancel () {
       this.birthProp.showBirthPicker = false
       this.showGenderPicker = false
@@ -120,6 +137,12 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+.avatar-cell {
+  .van-cell__title {
+    display: flex;
+    align-items: center;
+  }
+}
 
 </style>

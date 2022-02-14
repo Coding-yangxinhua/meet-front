@@ -6,7 +6,10 @@
         <van-button class="search-btn flex" slot="title" round icon="search" />
       </template>
       <template #right>
-        <i class="van-icon van-icon-edit" @click="$router.push('/article/write')"></i>
+        <van-badge content="99+">
+          <van-icon class="nav-item" name="envelop-o" @click="$router.push('/letter/')" />
+        </van-badge>
+        <van-icon class="nav-item" name="edit" @click="$router.push('/article/write')"/>
       </template>
     </van-nav-bar>
     <!-- 频道列表 -->
@@ -48,6 +51,18 @@ export default {
 
 <style scoped lang="scss">
   .home-container{
+    ::v-deep .van-nav-bar__right {
+      padding: 0;
+      .van-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .nav-item {
+        font-size: 20px;
+        width: 35px;
+      }
+    }
     .search-btn{
       max-width: 100%;
       width: 277px;

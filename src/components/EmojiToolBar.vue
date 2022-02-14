@@ -1,29 +1,28 @@
 <template>
   <div class="emoji-container">
-    <van-popup class="emoji-popup"
-               :overlay="false"
-               v-model="showEmojiBox"
-               :safe-area-inset-bottom="true"
-               position="bottom">
-      <van-swipe class="emoji-swipe">
-        <van-swipe-item v-for="boxIndex in boxNum" :key="boxIndex">
-          <van-row class="emoji-row" v-for="heightIndex in (prop.height - 1)" :key="heightIndex">
-            <van-col @click="selectEmojiChild(boxIndex, heightIndex, widthIndex)" :span="24/prop.width" v-for="widthIndex in prop.width" :key="widthIndex">
-              {{emoji(boxIndex, heightIndex, widthIndex)}}
-            </van-col>
-          </van-row>
-          <van-row class="emoji-row" :key="prop.height">
-            <van-col @click="selectEmojiChild(boxIndex, prop.height, widthIndex)" :span="24/prop.width" v-for="widthIndex in (prop.width - 1)" :key="widthIndex">
-              {{emoji(boxIndex, prop.height, widthIndex)}}
-            </van-col>
-            <van-col class="deleteCol" :span="24/prop.width" @click="deleteEmojiChild">
-              <van-button class="deleteBtn" icon="cross" />
-            </van-col>
-          </van-row>
-          <div style="line-height: 20px;height: 20px;width: 100%"></div>
-        </van-swipe-item>
-      </van-swipe>
-    </van-popup>
+    <transition name="van-slide-up">
+      <div class="emoji-popup"
+           v-show="showEmojiBox">
+        <van-swipe class="emoji-swipe">
+          <van-swipe-item v-for="boxIndex in boxNum" :key="boxIndex">
+            <van-row class="emoji-row" v-for="heightIndex in (prop.height - 1)" :key="heightIndex">
+              <van-col @click="selectEmojiChild(boxIndex, heightIndex, widthIndex)" :span="24/prop.width" v-for="widthIndex in prop.width" :key="widthIndex">
+                {{emoji(boxIndex, heightIndex, widthIndex)}}
+              </van-col>
+            </van-row>
+            <van-row class="emoji-row" :key="prop.height">
+              <van-col @click="selectEmojiChild(boxIndex, prop.height, widthIndex)" :span="24/prop.width" v-for="widthIndex in (prop.width - 1)" :key="widthIndex">
+                {{emoji(boxIndex, prop.height, widthIndex)}}
+              </van-col>
+              <van-col class="deleteCol" :span="24/prop.width" @click="deleteEmojiChild">
+                <van-button class="deleteBtn" icon="cross" />
+              </van-col>
+            </van-row>
+            <div style="line-height: 20px;height: 20px;width: 100%"></div>
+          </van-swipe-item>
+        </van-swipe>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -34,7 +33,19 @@ export default {
   name: 'emoji-tool-bar',
   props: {
     showEmojiBox: {
-      default: false
+      default () {
+        return false
+      }
+    },
+    pos: {
+      default () {
+        return 0
+      }
+    },
+    input: {
+      default () {
+        return ''
+      }
     }
   },
   data () {
@@ -67,12 +78,28 @@ export default {
   methods: {
     // 删除表情
     deleteEmojiChild () {
-      this.$emit('deleteEmoji')
+      let tempInput = this.input
+      let tempPos = this.pos === 1 ? 2 : this.pos
+      // 若位置为0，则不执行删除
+      if (this.pos === 0) {
+        return
+      }
+      // 避免切割时造成表情变成?
+      const preElementLength = tempInput[tempPos - 2].codePointAt(0) === 55357 ? 2 : 1
+      // 分割并拼接字符串
+      tempInput = tempInput.slice(0, this.pos - preElementLength) + tempInput.slice(this.pos)
+      // 改变指向位置
+      tempPos -= preElementLength
+      this.$emit('deleteEmoji', tempInput, tempPos)
     },
     // 添加表情
     selectEmojiChild (index, height, width) {
       const value = this.emoji(index, height, width)
-      this.$emit('selectEmoji', value)
+      let tempInput = this.input
+      let tempPos = this.pos !== null ? this.pos : 0
+      tempInput = tempInput.slice(0, tempPos) + value + tempInput.slice(tempPos, tempInput.length)
+      tempPos += value.length
+      this.$emit('selectEmoji', tempInput, tempPos)
     }
   }
 }

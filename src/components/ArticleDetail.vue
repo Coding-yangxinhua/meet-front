@@ -5,25 +5,42 @@
       left-arrow
       left-text="首页"
       @click-left="$router.back()"
+      fixed
+      placeholder
     />
-    <article-list-single :article="article"></article-list-single>
-    <comment-list></comment-list>
+    <article-single :article="article"></article-single>
+    <van-tabs
+      sticky
+      lazy-render
+      offset-top="46"
+      v-model="active">
+      <van-tab title="转发"></van-tab>
+      <van-tab title="评论">
+        <comment-list></comment-list>
+      </van-tab>
+      <van-tab disabled title=""></van-tab>
+      <van-tab title="点赞">
+
+      </van-tab>
+    </van-tabs>
+
   </div>
 </template>
 
 <script>
 import { simuArticleList } from '@/data/ArticlesData'
-import ArticleListSingle from '@/components/ArticleListSingle'
+import ArticleSingle from '@/components/ArticleSingle'
 import CommentList from './CommentList'
 
 export default {
   name: 'article-detail',
-  components: { CommentList, ArticleListSingle },
+  components: { CommentList, ArticleSingle },
   created () {
     this.initArticle()
   },
   data () {
     return {
+      active: 1,
       articleId: this.$route.params.articleId,
       article: null
     }
@@ -43,6 +60,13 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.articleDetail {
+  height: 100%;
+
+}
+.van-tabs {
+  height: 100%;
+}
 ::v-deep .van-nav-bar__text {
   color: black;
   font-size: 16px;

@@ -12,7 +12,7 @@
         :finished-text="loadStatus.finishMsg"
         @load="onLoad"
       >
-        <article-list-single @dislikeArticle="dislikeArticle" v-for="(item, index) in articleList" :key="index" :article="item"></article-list-single>
+        <article-single @dislikeArticle="dislikeArticle" v-for="(item, index) in articleList" :key="index" :article="item"></article-single>
       </van-list>
     </van-pull-refresh>
     <van-popup v-model="dislike.dislikePopShowing" get-container="body" round position="bottom">
@@ -27,14 +27,14 @@
 <script>
 
 import { simuArticleList, simuLoadArticleList, simuRefreshArticleList } from '@/data/ArticlesData'
-import ArticleListSingle from '@/components/ArticleListSingle'
+import ArticleSingle from '@/components/ArticleSingle'
 import Vue from 'vue'
 import { Popup } from 'vant'
 Vue.use(Popup)
 export default {
   name: 'article-list',
   components: {
-    ArticleListSingle
+    ArticleSingle
   },
   created () {
     this.initArticleList()

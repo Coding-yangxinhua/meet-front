@@ -1,16 +1,28 @@
 @font-face {
   font-family: "iconfont"; /* Project id 2616283 */
-  src: url('//at.alicdn.com/t/font_2616283_ezmzlyw9zf9.woff2?t=1638883999033') format('woff2'),
-  url('//at.alicdn.com/t/font_2616283_ezmzlyw9zf9.woff?t=1638883999033') format('woff'),
-  url('//at.alicdn.com/t/font_2616283_ezmzlyw9zf9.ttf?t=1638883999033') format('truetype');
+  src: url('//at.alicdn.com/t/font_2616283_95ni41ah5es.woff2?t=1641438724220') format('woff2'),
+  url('//at.alicdn.com/t/font_2616283_95ni41ah5es.woff?t=1641438724220') format('woff'),
+  url('//at.alicdn.com/t/font_2616283_95ni41ah5es.ttf?t=1641438724220') format('truetype');
 }
 
 .iconfont {
-  font-family: "iconfont", serif !important;
+  font-family: "iconfont" !important;
   font-size: 16px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-addLike:before {
+  content: "\e61e";
+}
+
+.icon-bell-mute:before {
+  content: "\e698";
+}
+
+.icon-cancleLike:before {
+  content: "\e65a";
 }
 
 .icon-dislikeUser:before {

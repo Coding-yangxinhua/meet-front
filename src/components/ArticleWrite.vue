@@ -1,15 +1,26 @@
 <template>
   <div class="articleWrite">
-    <normal-nav  title="动态" :finish="uploadArticle">
-      <van-button round type="info" size="small">发表</van-button>
-    </normal-nav>
+    <van-nav-bar
+      title="动态"
+      left-arrow
+      @click-left="$router.back()"
+    >
+      <template #right>
+        <van-button :disabled="article.content === ''"
+                    round
+                    @click="uploadArticle"
+                    class="send-btn upload-btn"
+                    :class="{'send-btn-active': article.content !== ''}"
+        >发送</van-button>
+      </template>
+    </van-nav-bar>
     <div style="background-color:white;">
       <van-field
         class="content_box"
         @blur="resetPos"
         v-model="article.content"
-        rows="4"
-        autosize="true"
+        rows="5"
+        autosize
         type="textarea"
         placeholder="愿执笔为刃，乘风破浪..."
         show-word-limit
@@ -23,24 +34,27 @@
     </div>
     <emoji-tool-bar :showEmojiBox="this.showEmojiBox"
                     @selectEmoji="selectEmoji"
-                    @deleteEmoji="deleteEmoji">
+                    @deleteEmoji="deleteEmoji"
+                    :pos="inputPos"
+                    :input="article.content"
+    >
     </emoji-tool-bar>
   </div>
 </template>
 
 <script>
-import NormalNav from '@/components/NormalNav'
 import { simuArticleList } from '@/data/ArticlesData'
 import { userList } from '@/data/UsersData'
 import EmojiToolBar from '@/components/EmojiToolBar'
 export default {
   name: 'article-write',
-  components: { NormalNav, EmojiToolBar },
+  components: { EmojiToolBar },
   data () {
     return {
       showEmojiBox: false,
+      inputPos: 0,
       article: {
-        articleId: parseInt(Math.random()),
+        articleId: parseInt(Math.random() * 1000),
         content: '',
         userInfo: userList[0]
       }
@@ -51,32 +65,19 @@ export default {
     resetPos (e) {
       this.inputPos = e.srcElement.selectionStart
     },
-    selectEmoji (value) {
-      const tempInput = this.article.content
-      const tempPos = this.inputPos
-      if (this.inputPos == null) {
-        this.article.content += value
-        return
-      }
-      this.article.content = tempInput.slice(0, tempPos) + value + tempInput.slice(tempPos, tempInput.length)
-      this.inputPos += value.length
+    // 选择表情
+    selectEmoji (input, pos) {
+      this.article.content = input
+      this.inputPos = pos
     },
-    deleteEmoji () {
-      const tempInput = this.article.content
-      const tempPos = this.inputPos === 1 ? 2 : this.inputPos
-      // 若位置为0，则不执行删除
-      if (this.inputPos === 0) {
-        return
-      }
-      // 避免切割时造成表情变成?
-      const preElementLength = tempInput[tempPos - 2].codePointAt(0) === 55357 ? 2 : 1
-      // 分割并拼接字符串
-      this.article.content = tempInput.slice(0, this.inputPos - preElementLength) + tempInput.slice(this.inputPos)
-      // 改变指向位置
-      this.inputPos -= preElementLength
+    // 删除表情
+    deleteEmoji (input, pos) {
+      this.article.content = input
+      this.inputPos = pos
     },
     uploadArticle () {
-      simuArticleList.push(this.article)
+      this.article.gmtCreate = new Date()
+      simuArticleList.unshift(this.article)
     }
   }
 }
@@ -93,6 +94,9 @@ export default {
     font-size: 24px;
     color: #eba60a;
   }
+}
+.upload-btn {
+  height: 35px;
 }
 .van-uploader {
   padding: 0 10px 0 10px;

@@ -38,8 +38,8 @@
       </van-row>
       <!--  尾部：点赞、评论、转发 -->
       <van-row class="footer">
-        <van-col span="8" class="flex center">
-          <span class="iconfont icon-like"></span>
+        <van-col span="8" class="flex center" @click="changeLikeStatus">
+          <span class="iconfont icon-like" :class="{ 'active-color': article.likeStatus }"></span>
           <span class="text">
           <span class="number like-number" v-if="article.likeNum > 0">{{ article.likeNum }}</span>
           <span class="text" v-else>点赞</span>
@@ -55,7 +55,7 @@
         <van-col span="8" class="flex center">
           <span class="iconfont icon-repost"></span>
           <span class="text">
-          <span class="star-number number" v-if="article.respostNum > 0">{{ article.respostNum }}</span>
+          <span class="star-number number" v-if="article.repostNum > 0">{{ article.repostNum }}</span>
           <span v-else>转发</span>
         </span>
         </van-col>
@@ -77,7 +77,7 @@ Vue.use(Lazyload, {
   lazyComponent: true
 })
 export default {
-  name: 'article-list-single',
+  name: 'article-single',
   components: {
     [ImagePreview.Component.name]: ImagePreview.Component
   },
@@ -101,6 +101,15 @@ export default {
     }
   },
   methods: {
+    // 点赞文章
+    changeLikeStatus () {
+      this.article.likeStatus = !this.article.likeStatus
+      if (this.article.likeStatus) {
+        this.article.likeNum += 1
+        return
+      }
+      this.article.likeNum -= 1
+    },
     // 收藏文章
     starArticle () {
     },

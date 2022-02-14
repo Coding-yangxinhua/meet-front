@@ -21,6 +21,7 @@
       >
         <comment-single
           :comment="comment"
+          :show-reply-text="true"
           v-for="comment in comments"
           :key="comment.commentId"
         />
@@ -46,15 +47,28 @@ export default {
   },
   data () {
     return {
+      // 回复列表下拉加载
+      replyLoadStatus: {
+        isLoading: false,
+        isFinished: false
+      },
+      // 评论列表上拉加载更多 list
       loadStatus: {
         isLoading: false,
         finished: false,
         finishMsg: '已经到底咯',
         immediateCheck: true
       },
+      // 评论列表下拉刷新
       refreshStatus: {
         isRefreshing: false,
         successMsg: '刷新成功'
+      },
+      // 第一级状态栏
+      replyStatus: {
+        isShowingReply: false,
+        replys: null,
+        parentComment: null
       },
       nowOrderId: 0,
       orders: orderList,
@@ -64,18 +78,17 @@ export default {
   methods: {
     // 上拉刷新
     async onRefresh () {
-      // this.articleList.unshift(...simuRefreshArticleList)
       this.refreshStatus.isRefreshing = false
       this.refreshStatus.successMsg = '刷新成功'
     },
     // 下拉加载更多
     onLoad () {
-      // this.articleList = this.articleList.concat(...simuLoadArticleList)
-      this.loadStatus.isLoading = false
-      if (this.comments.length > 15) {
-        this.loadStatus.finished = true
-        this.loadStatus.finishMsg = '已经到底了'
-      }
+      // this.comments.push(...loadReply)
+      // this.loadStatus.isLoading = false
+      // if (this.comments.length > 15) {
+      //   this.loadStatus.finished = true
+      //   this.loadStatus.finishMsg = '已经到底了'
+      // }
     }
   }
 }

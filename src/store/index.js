@@ -5,11 +5,13 @@ import { setItem, getItem, removeItem } from '@/utils/storage'
 Vue.use(Vuex)
 
 const TOKEN_KEY = 'token'
+const USER_INFO = 'userInfo'
 
 export default new Vuex.Store({
   state: {
     position: 0,
     token: getItem(TOKEN_KEY),
+    userInfo: getItem(USER_INFO),
     tempAlbum: {
       albumTitle: '',
       privateInfo: {
@@ -34,11 +36,21 @@ export default new Vuex.Store({
         }
       }
     },
+    // 存储token
     setToken (state, token) {
       state.token = token
       setItem(TOKEN_KEY, token)
     },
     removeToken (state) {
+      state.token = null
+      removeItem(TOKEN_KEY)
+    },
+    // 存储user信息
+    setUserInfo (state, userInfo) {
+      state.userInfo = userInfo
+      setItem(TOKEN_KEY, userInfo)
+    },
+    getUserInfo (state) {
       state.token = null
       removeItem(TOKEN_KEY)
     }

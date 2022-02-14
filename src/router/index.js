@@ -39,6 +39,12 @@ const routes = [
     name: 'me-profile',
     component: () => import('@v/me/components/MeProfile')
   },
+  // 用户资料 -> 修改姓名
+  {
+    path: '/me/profile/nickname',
+    name: 'me-profile-nickname',
+    component: () => import('@v/me/components/MeProfileNickname')
+  },
   // 用户相册
   {
     path: '/album/',
@@ -60,12 +66,6 @@ const routes = [
     name: 'album-private',
     component: () => import('@c/AlbumPrivateSelect')
   },
-  // 修改姓名
-  {
-    path: '/user/profile/nickName',
-    name: 'user-profile-nickName',
-    component: () => import('@v/me/components/MeProFileNickName')
-  },
   // 文章详情
   {
     path: '/article/detail',
@@ -77,6 +77,19 @@ const routes = [
     path: '/article/write',
     name: 'article-write',
     component: () => import('@/components/ArticleWrite')
+  },
+  // 私信页面
+  {
+    path: '/letter/',
+    name: 'letter',
+    component: () => import('@v/letter')
+  },
+  // 私信下聊天详情页面
+  // 私信页面
+  {
+    path: '/letter/chat',
+    name: 'letter-chat',
+    component: () => import('@v/letter/components/LetterChat')
   }
 ]
 

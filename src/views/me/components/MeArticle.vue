@@ -12,7 +12,7 @@
         finished-text="没有更多了"
         @load="onLoad"
       >
-        <article-list-single v-for="item in articles" :key="item.articleId" :article="item"></article-list-single>
+        <article-single v-for="item in articles" :key="item.articleId" :article="item"></article-single>
       </van-list>
     </van-pull-refresh>
   </div>
@@ -20,12 +20,12 @@
 
 <script>
 import { getArticlesByUid, refreshArticlesByUid } from '@/api/article'
-import ArticleListSingle from '@/components/ArticleListSingle'
+import ArticleSingle from '@/components/ArticleSingle'
 
 export default {
   name: 'me-article',
   components: {
-    ArticleListSingle
+    ArticleSingle
   },
   props: {
     uid: {
