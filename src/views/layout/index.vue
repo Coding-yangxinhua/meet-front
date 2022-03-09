@@ -20,6 +20,7 @@
 <script>
 import { navList } from '../../data/navData'
 import { mapGetters, mapMutations } from 'vuex'
+import Cookies from 'js-cookie'
 
 export default {
   name: 'index',
@@ -38,8 +39,15 @@ export default {
     ...mapMutations([
       'setPosition'
     ]),
-    setActive (pos) {
-      this.setPosition(pos)
+    setActive (pos, needLogin) {
+      if (needLogin) {
+        const meet = Cookies.get('meet-token')
+        if (meet != null) {
+          this.setPosition(pos)
+        }
+      } else {
+        this.setPosition(pos)
+      }
     }
   }
 }

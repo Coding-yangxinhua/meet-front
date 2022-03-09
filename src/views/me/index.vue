@@ -1,39 +1,39 @@
 <template>
   <div class="me">
-    <me-is-login v-if="token" :user="user" ></me-is-login>
-    <me-not-login v-else></me-not-login>
+    <me-is-login v-if="user != null" :user="user" ></me-is-login>
   </div>
 </template>
 
 <script>
-import { mapState } from 'vuex'
-import MeNotLogin from '@/views/me/components/MeNotLogin'
 import MeIsLogin from '@/views/me/components/MeIsLogin'
 import { userList } from '@/data/UsersData'
+import Cookies from 'js-cookie'
 export default {
   name: 'me',
   data () {
     return {
-      user: {}
+      user: null
     }
   },
   components: {
-    MeIsLogin,
-    MeNotLogin
+    MeIsLogin
   },
   created () {
-    this.getMyInfo()
-  },
-  computed: {
-    ...mapState({
-      token: 'token'
-    })
-
+    this.checkToken()
   },
   methods: {
     getMyInfo () {
       this.user = userList[0]
+    },
+    checkToken () {
+      const token = Cookies.get('meet-token')
+      if (token != null) {
+        this.getMyInfo()
+      } else {
+        this.$router.push('/login')
+      }
     }
+
   }
 
 }

@@ -1,54 +1,48 @@
 <template>
-  <div>
+  <div class="login">
     <van-nav-bar class="tm-nav-bar"
+                 fixed
                  left-arrow
                  @click-left="$router.back()"
-                 title="登录"
     />
-    <van-form
-    :show-error="false"
-    :show-error-message="false"
-    :validate-first="true"
-    ref="login-form"
-    @submit="onLogin"
-    @failed="onFailed">
-      <van-field
-        v-model="user.mobile"
-        center
-        placeholder="请输入手机号"
-        name="mobile"
-        icon-prefix="iconfont icon"
-        left-icon="mobile"
-        :rules="formRules.mobile"
-      />
-      <van-field
-        v-model="user.code"
-        placeholder="请输入验证码"
-        center
-        name="code"
-        icon-prefix="iconfont icon"
-        left-icon="secuirity"
-        :rules="formRules.code"
-      >
-        <template #button>
-          <van-button v-if="isCountDownShow" disabled class="send-btn" round size="mini">
-              <van-count-down :time="1000 * 60" format="ss s" @finish="isCountDownShow = false"/>
-          </van-button>
-          <van-button
-            v-else
-            class="send-btn"
-            round size="mini"
-            :loading="isSendLoading"
-            @click.prevent="onSendSms">发送验证码</van-button>
-        </template>
-      </van-field>
-      <div class="login-btn-warp">
-        <van-button class="login-btn" size="large" native-type="submit"
-                    color="linear-gradient(to right, #ff6034, #ee0a24)">登录
-        </van-button>
-      </div>
-    </van-form>
-
+   <div class="card-bg flex-col">
+     <div class="card">
+       <div class="title">登录体验更精彩</div>
+       <van-form
+         class="form flex-col a-center"
+         :show-error="false"
+         :show-error-message="false"
+         :validate-first="true"
+         ref="login-form"
+         @submit="onLogin"
+         @failed="onFailed">
+         <div class="mobile-box">
+           <van-field
+             class="mobile-field"
+             v-model="user.mobile"
+             type="number"
+             label="+86"
+             center
+             clearable
+             clickable
+             maxlength="11"
+             placeholder="请输入手机号"
+           />
+         </div>
+         <div class="login-btn-warp">
+           <van-button class="login-btn" :class="{'login-btn-disable': !isMobile}" size="large" native-type="submit"></van-button>
+         </div>
+         <div class="change_login_type_btn">
+<!--           {{ type.desc }}-->
+         </div>
+       </van-form>
+     </div>
+   </div>
+    <div class="extra flex center">
+      <div v-show="position!==1">换个账号</div><div class="split-pane">|</div>
+      <div v-show="position!==2">注册</div><div class="split-pane">|</div>
+      <div>帮助</div>
+    </div>
   </div>
 </template>
 
@@ -59,22 +53,19 @@ import Vue from 'vue'
 
 Vue.use(Toast)
 export default {
-
   data () {
     return {
+      historyUserList: [],
       user: {
         mobile: '',
         code: ''
       },
+      position: 0,
       formRules: {
         mobile: [
           {
-            required: true,
-            message: '请输入手机号'
-          },
-          {
             pattern: /^1[3||7|8|9]\d{9}$/,
-            message: '手机号格式不正确'
+            message: '您输入的手机号格式有误，请重新输入'
           }
         ],
         code: [
@@ -94,11 +85,17 @@ export default {
       isSendLoading: false
     }
   },
+  computed: {
+    isMobile () {
+      const reg = /^1[3||7|8|9]\d{9}$/
+      return reg.test(this.user.mobile)
+    }
+  },
   methods: {
     async onLogin () {
       // 登录
       Toast.loading({
-        message: '登录中',
+        message: '登录中...',
         forbidClick: true,
         duration: 0
       })
@@ -110,11 +107,22 @@ export default {
           this.$router.back()
           Toast.success('登录成功')
           break
-        case 401:
-          Toast.fail('手机号或验证码格式不正确')
+      }
+    },
+    async onRegister () {
+      // 注册
+      Toast.loading({
+        message: '注册中...',
+        forbidClick: true,
+        duration: 0
+      })
+      const res = await login(this.user)
+      // 处理返回值
+      switch (res.code) {
+        case 200:
+          this.$router.back()
+          Toast.success('注册成功')
           break
-        case 1001:
-          Toast.fail('验证码错误')
       }
     },
 
@@ -150,16 +158,92 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.login {
+  height: 100%;
+  width: 100%;
+}
 .login-btn-warp {
   padding: 26px 16px;
+  .login-btn {
+    width: 288px;
+    height: 40px;
+    background-color: #f56161;
+    border-radius: 20px;
+    color: white;
+  }
+  .login-btn-disable {
+    background-color: #fab0b0;
+  }
 }
+.tm-nav-bar {
+  height: 200px;
+  background: linear-gradient(to bottom, rgba(229, 89, 89, 0.9), rgba(255, 184, 140, 0.8), rgba(255,255,255, 0.6)); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+  ::v-deep .van-nav-bar__arrow {
+    color: white;
+  }
+}
+.card-bg {
+  z-index: 1000;
+  height: 84%;
+  background-color: transparent;
+  width: 100%;
+  justify-content: end;
+  align-items: center;
 
-.send-btn {
-  background-color: #ededed;
-  width: 70px;
-  height: 24px;
-  .van-button__text {
-    color: #666666;
+  .card {
+    height: 550px;
+    border-radius: 20px;
+    background-color: #fff;
+    z-index: 1001;
+    width: 96%;
+    .title {
+      width: 100%;
+      height: 80px;
+      line-height: 80px;
+      font-size: 19px;
+      text-align: center;
+    }
+    .form {
+      background-color: transparent;
+      .mobile-box {
+        border-radius: 35px;
+        background-color: #F6F6F6;
+        width: 80%;
+        .van-cell {
+          background-color: transparent;
+        }
+        .mobile-field {
+          ::v-deep .van-field__label {
+            text-align: right;
+            width: 30%;
+            color: #545454;
+            font-size: 18px;
+          }
+          ::v-deep input {
+            font-size: 18px;
+            padding: 0 8px;
+          }
+          ::v-deep input::placeholder {
+              font-size: 16px;
+            color: #BDBDBD;
+          }
+        }
+      }
+    }
+  }
+}
+.van-hairline--bottom::after {
+  border-bottom-width: 0;
+}
+.extra {
+  width: 100%;
+  height: 150px;
+  font-size: 12px;
+  color: #787878;
+  .split-pane {
+    margin: 0 10px;
+    font-size: 10px;
+    font-weight: lighter;
   }
 }
 </style>
