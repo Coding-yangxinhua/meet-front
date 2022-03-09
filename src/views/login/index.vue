@@ -3,44 +3,18 @@
     <van-nav-bar class="tm-nav-bar"
                  fixed
                  left-arrow
-                 @click-left="$router.back()"
+                 @click-left="goBack()"
     />
    <div class="card-bg flex-col">
      <div class="card">
-       <div class="title">登录体验更精彩</div>
-       <van-form
-         class="form flex-col a-center"
-         :show-error="false"
-         :show-error-message="false"
-         :validate-first="true"
-         ref="login-form"
-         @submit="onLogin"
-         @failed="onFailed">
-         <div class="mobile-box">
-           <van-field
-             class="mobile-field"
-             v-model="user.mobile"
-             type="number"
-             label="+86"
-             center
-             clearable
-             clickable
-             maxlength="11"
-             placeholder="请输入手机号"
-           />
-         </div>
-         <div class="login-btn-warp">
-           <van-button class="login-btn" :class="{'login-btn-disable': !isMobile}" size="large" native-type="submit"></van-button>
-         </div>
-         <div class="change_login_type_btn">
-<!--           {{ type.desc }}-->
-         </div>
-       </van-form>
+       <login-history v-show="getPosition === 0" />
+       <login v-show="getPosition === 1" />
+       <register v-show="getPosition === 2" />
      </div>
    </div>
     <div class="extra flex center">
-      <div v-show="position!==1">换个账号</div><div class="split-pane">|</div>
-      <div v-show="position!==2">注册</div><div class="split-pane">|</div>
+      <div class="flex" v-show="getPosition !== 1" @click="goAhead(1)">换个账号<div class="split-pane">|</div></div>
+      <div class="flex" v-show="getPosition !== 2" @click="goAhead(2)">注册<div class="split-pane">|</div></div>
       <div>帮助</div>
     </div>
   </div>
@@ -50,9 +24,14 @@
 import { login } from '@/api/user'
 import { Toast } from 'vant'
 import Vue from 'vue'
+import { getItem } from '../../utils/storage'
+import Login from './components/Login'
+import LoginHistory from './components/History'
+import Register from './components/Register'
 
 Vue.use(Toast)
 export default {
+  components: { Register, LoginHistory, Login },
   data () {
     return {
       historyUserList: [],
@@ -60,35 +39,29 @@ export default {
         mobile: '',
         code: ''
       },
-      position: 0,
-      formRules: {
-        mobile: [
-          {
-            pattern: /^1[3||7|8|9]\d{9}$/,
-            message: '您输入的手机号格式有误，请重新输入'
-          }
-        ],
-        code: [
-          {
-            required: true,
-            message: '请输入验证码'
-          },
-          {
-            pattern: /\d{6}/,
-            message: '验证码格式不正确'
-          }
-        ]
-      },
+      // 0 账号选择界面， 1 账号登录界面， 2  注册界面
+      position: [],
       // 倒计时的显示
       isCountDownShow: false,
       // 发送验证码防抖
       isSendLoading: false
     }
   },
+  created () {
+    this.historyUserList = getItem('history_user_list')
+    if (this.historyUserList === null || this.historyUserList.length === 0) {
+      this.position.push(1)
+    } else {
+      this.position.push(0)
+    }
+  },
   computed: {
     isMobile () {
       const reg = /^1[3||7|8|9]\d{9}$/
       return reg.test(this.user.mobile)
+    },
+    getPosition () {
+      return this.position[this.position.length - 1]
     }
   },
   methods: {
@@ -125,23 +98,11 @@ export default {
           break
       }
     },
-
-    // 表单项错误
-    onFailed (error) {
-      console.log(error)
-      if (error.errors[0]) {
-        Toast({
-          message: error.errors[0].message,
-          position: 'top'
-        })
-      }
-    },
     // 发送验证码
     async onSendSms () {
       try {
         this.isSendLoading = true
         // 验证手机号是否为空
-        await this.$refs['login-form'].validate('mobile')
         this.isSendLoading = false
         // 倒计时
         this.isCountDownShow = true
@@ -152,6 +113,17 @@ export default {
         })
       }
       this.isSendLoading = false
+    },
+    // 页面回退
+    goBack () {
+      this.position.pop()
+      if (this.position.length <= 0) {
+        this.$router.back()
+      }
+    },
+    // 页面前进
+    goAhead (pos) {
+      this.position.push(pos)
     }
   }
 }

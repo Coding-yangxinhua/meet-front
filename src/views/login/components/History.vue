@@ -1,12 +1,12 @@
 <template>
   <div class="login-history">
-
+    history
   </div>
 </template>
 
 <script>
 export default {
-  name: 'loginHistory',
+  name: 'login-history',
   data () {
     return {
       historyUserList: null
