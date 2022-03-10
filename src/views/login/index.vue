@@ -13,9 +13,9 @@
      </div>
    </div>
     <div class="extra flex center">
-      <div class="flex" v-show="getPosition !== 1" @click="goAhead(1)">换个账号<div class="split-pane">|</div></div>
+      <div class="flex" v-show="getPosition === 0" @click="goAhead(1)">换个账号<div class="split-pane">|</div></div>
       <div class="flex" v-show="getPosition !== 2" @click="goAhead(2)">注册<div class="split-pane">|</div></div>
-      <div>帮助</div>
+      <div v-show="getPosition !== 2" >帮助</div>
     </div>
   </div>
 </template>
@@ -134,19 +134,7 @@ export default {
   height: 100%;
   width: 100%;
 }
-.login-btn-warp {
-  padding: 26px 16px;
-  .login-btn {
-    width: 288px;
-    height: 40px;
-    background-color: #f56161;
-    border-radius: 20px;
-    color: white;
-  }
-  .login-btn-disable {
-    background-color: #fab0b0;
-  }
-}
+
 .tm-nav-bar {
   height: 200px;
   background: linear-gradient(to bottom, rgba(229, 89, 89, 0.9), rgba(255, 184, 140, 0.8), rgba(255,255,255, 0.6)); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
@@ -174,33 +162,6 @@ export default {
       line-height: 80px;
       font-size: 19px;
       text-align: center;
-    }
-    .form {
-      background-color: transparent;
-      .mobile-box {
-        border-radius: 35px;
-        background-color: #F6F6F6;
-        width: 80%;
-        .van-cell {
-          background-color: transparent;
-        }
-        .mobile-field {
-          ::v-deep .van-field__label {
-            text-align: right;
-            width: 30%;
-            color: #545454;
-            font-size: 18px;
-          }
-          ::v-deep input {
-            font-size: 18px;
-            padding: 0 8px;
-          }
-          ::v-deep input::placeholder {
-              font-size: 16px;
-            color: #BDBDBD;
-          }
-        }
-      }
     }
   }
 }

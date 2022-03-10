@@ -33,6 +33,11 @@ const routes = [
     name: 'login',
     component: () => import('@v/login/')
   },
+  {
+    path: '/login/code',
+    name: 'login-code',
+    component: () => import('@v/login/components/LoginCode')
+  },
   // 用户资料
   {
     path: '/me/profile',
