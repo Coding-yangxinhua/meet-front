@@ -20,7 +20,8 @@ module.exports = {
       alias: {
         '@': resolve('src'),
         '@v': resolve('src/views'),
-        '@c': resolve('src/components')
+        '@c': resolve('src/components'),
+        '@u': resolve('src/utils')
       }
     }
   }

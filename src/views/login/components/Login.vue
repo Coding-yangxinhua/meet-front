@@ -43,7 +43,7 @@ export default {
   data () {
     return {
       user: {
-        mobile: null,
+        mobile: 19950125726,
         password: null
       },
       code: null,
@@ -72,6 +72,7 @@ export default {
       return isMobile(this.user.mobile)
     }
   },
+
   methods: {
     disposeLogin () {
       if (this.checkPass) {
@@ -83,7 +84,7 @@ export default {
               // 1为登录
               type: 1,
               user: {
-                mobile: this.mobile
+                mobile: this.user.mobile
               }
             }
           })

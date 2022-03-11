@@ -59,3 +59,8 @@ export const newDateSubOld = (oldDate, newDate) => {
     second: newDate.second - oldDate.second
   }
 }
+
+// 手机格式转换
+export const toMobile = (mobile) => {
+  return `${mobile.slice(0, 3)} ${mobile.slice(3, 7)} ${mobile.slice(7, 11)}`
+}
