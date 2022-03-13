@@ -5,9 +5,8 @@
         v-for="(item, index) of size"
         :key="item">
         <van-field @keyup.native="keyUp($event, index)"
-                   @keydown="keyUp($event, index)"
-                   @focus.prevent="focusBox(index, true)"
-                   @focusout="focusBox(index, false)"
+                   @focus.prevent="focusOn(index)"
+                   @focusout="focusOut(index)"
                    ref="inputs"
                    class="code-input"
                    :class="{'code-input-full' : isFull(index)}"
@@ -22,7 +21,7 @@
 </template>
 
 <script>
-import { specialKeyCode } from '../data/SystemConstants'
+import { specialKeyCode } from '@/data/SystemConstants'
 
 export default {
   name: 'CodeBox',
@@ -34,13 +33,13 @@ export default {
     },
     type: {
       default () {
-        return 'text'
+        return 'number'
       }
     }
   },
   data () {
     return {
-      code: [1, 2, 3, '']
+      code: [1]
     }
   },
   methods: {
@@ -57,27 +56,34 @@ export default {
       return false
     },
     keyUp (e, index) {
-      const that = this
       const keyCode = e.keyCode
-      if (keyCode === specialKeyCode.BACKSPACE) {
+      if (keyCode === specialKeyCode.LEFT) {
         index = index === 0 ? 0 : index - 1
         this.code.splice(index, 1, '')
-      } else {
-        console.log(that.$refs.inputs[index])
-        index++
       }
-      console.log(this.code)
-      this.$nextTick(() => {
-        that.$refs.inputs[index].focus()
-      })
     },
-    // 焦点事件
-    focusBox (index, add = true) {
-      console.log(index + '获得焦点')
-      if (add) {
-        this.$refs.inputs[index].$el.classList.add('code-input-focus')
-      } else {
-        this.$refs.inputs[index].$el.classList.remove('code-input-focus')
+    // 验证码填满事件
+    checkCode (code) {
+      this.$emit('checkCode', code)
+    },
+    // 焦点获得事件
+    focusOn (index) {
+      this.$refs.inputs[index].$el.classList.add('code-input-focus')
+    },
+    // 焦点失去事件
+    focusOut (index) {
+      const that = this
+      this.$nextTick(() => {
+        if (!that.isNull(this.code[index]) && index < that.size - 1) {
+          that.$refs.inputs[index + 1].focus()
+        } else if (index > 0) {
+          that.$refs.inputs[index - 1].focus()
+        }
+      })
+      this.$refs.inputs[index].$el.classList.remove('code-input-focus')
+      const codeString = this.code.join('')
+      if (codeString.length === this.size) {
+        this.checkCode(codeString)
       }
     },
     // 检测验证码单元是否为空
@@ -97,12 +103,12 @@ export default {
 .code-input-box {
   .code-input {
     border-radius: 5px;
-    width: 45px;
-    height: 45px;
+    width: 43px;
+    height: 43px;
     background-color: #eeeaea;
     ::v-deep .van-field__control {
       background-color: transparent;
-      font-size: 20px;
+      font-size: 19px;
       text-align: center;
       color: white;
     }
