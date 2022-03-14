@@ -1,5 +1,6 @@
 import axios from 'axios'
-import qs from 'qs'
+// import qs from 'qs'
+import store from '@/store'
 
 const request = axios.create({
   // 根据环境变量区分接口的默认地址
@@ -11,8 +12,8 @@ const request = axios.create({
 })
 
 // 设置请求传递数据格式、格式化post数据
-request.defaults.headers['Content-Type'] = 'application/x-www-form-urlencoded'
-request.defaults.transformRequest = data => qs.stringify(data)
+request.defaults.headers['Content-Type'] = 'application/json'
+// request.defaults.transformRequest = data => qs.stringify(data)
 
 /**
  *  请求拦截器
@@ -26,7 +27,10 @@ request.defaults.transformRequest = data => qs.stringify(data)
 //   }
 //   return config
 // })
-
+request.interceptors.request.use(config => {
+  store.state.isLoading = false
+  return config
+})
 /**
  * 响应拦截器
  */

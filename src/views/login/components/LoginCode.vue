@@ -18,9 +18,9 @@
 </template>
 
 <script>
-import { toMobile } from '../../../utils/DateFormatUtil'
+import { toMobile } from '@/utils/DateFormatUtil'
 import CodeBox from '../../../components/CodeBox'
-import { sendSms } from '@/api/user'
+import { register, login, sendSms } from '@/api/user'
 
 export default {
   name: 'loginCode',
@@ -53,8 +53,16 @@ export default {
       const res = await sendSms(this.user.mobile, this.type)
       console.log(res)
     },
-    checkCode () {
-      console.log('check')
+    checkCode (code) {
+      console.log(this.type)
+      console.log(this.code)
+      switch (this.type) {
+        case 0:
+          register(code, this.user)
+          break
+        case 1:
+          login(code, this.user)
+      }
     }
   }
 }

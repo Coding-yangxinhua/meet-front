@@ -10,7 +10,7 @@ const USER_INFO = 'userInfo'
 export default new Vuex.Store({
   state: {
     position: 0,
-    token: getItem(TOKEN_KEY),
+    isLoading: false,
     userInfo: getItem(USER_INFO),
     tempAlbum: {
       albumTitle: '',

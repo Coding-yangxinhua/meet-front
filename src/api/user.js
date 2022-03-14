@@ -6,11 +6,27 @@ import request from '@/utils/request'
 
 // 登录 、 注册
 
-export const login = data => {
+export const login = (code, user) => {
   return request({
     method: 'POST',
     url: '/user/login',
-    data
+    params: {
+      code
+    },
+    data: {
+      user
+    }
+  })
+}
+
+export const register = (code, user) => {
+  return request({
+    method: 'POST',
+    url: '/user/register',
+    params: {
+      code
+    },
+    data: user
   })
 }
 
