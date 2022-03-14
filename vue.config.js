@@ -13,6 +13,18 @@ module.exports = {
   // 设置开发服务器端口号
   // port: 8080
   // },
+  devServer: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:9420', // 接口地址
+        ws: true, // 是否启用websockets
+        changOrigin: true, // 允许跨域  Origin源127.0.0.1:9000
+        pathRewrite: {
+          '^/api': '' // 请求的时候使用这个/api前缀就可以
+        }
+      }
+    }
+  },
   configureWebpack: {
     // 解析
     resolve: {

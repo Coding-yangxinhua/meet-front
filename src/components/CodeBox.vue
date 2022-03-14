@@ -39,7 +39,7 @@ export default {
   },
   data () {
     return {
-      code: [1]
+      code: []
     }
   },
   methods: {

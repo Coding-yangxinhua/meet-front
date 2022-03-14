@@ -9,7 +9,7 @@ import request from '@/utils/request'
 export const login = data => {
   return request({
     method: 'POST',
-    url: '/user/authorizations',
+    url: '/user/login',
     data
   })
 }
@@ -18,7 +18,7 @@ export const login = data => {
 export const sendSms = (mobile, type) => {
   return request({
     method: 'GET',
-    url: '/user/send_sms',
+    url: '/user/sendSms',
     params: {
       mobile,
       type
@@ -35,15 +35,16 @@ export const getUserInfo = () => {
 }
 
 // 修改用户信息
-export const updateUserInfo = (key, value) => {
-  // const user = {
-  //   gender: 0
-  // }
+export const updateProfile = (key, value) => {
   return request({
     method: 'POST',
-    url: 'user/userInfo',
-    data: {
-      gender: 0n
-    }
+    url: 'user/updateProfile'
+  })
+}
+// 修改用户
+export const updatePassword = (key, value) => {
+  return request({
+    method: 'POST',
+    url: 'user/updatePassword'
   })
 }
