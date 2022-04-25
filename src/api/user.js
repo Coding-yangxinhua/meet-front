@@ -13,9 +13,7 @@ export const login = (code, user) => {
     params: {
       code
     },
-    data: {
-      user
-    }
+    data: user
   })
 }
 

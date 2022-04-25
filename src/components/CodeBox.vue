@@ -86,6 +86,10 @@ export default {
         this.checkCode(codeString)
       }
     },
+    // clear事件
+    clear () {
+      this.code = []
+    },
     // 检测验证码单元是否为空
     isNull (value, ...args) {
       for (const arg of args) {

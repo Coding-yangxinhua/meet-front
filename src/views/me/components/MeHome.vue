@@ -41,7 +41,7 @@ export default {
         message: '确定退出当前账号吗？'
       }).then(() => {
         this.$store.commit('setUser', null)
-        this.$store.commit('setToken', null)
+
         this.$router.go(0)
       })
     }

@@ -51,13 +51,13 @@ export default {
       typeList: [
         {
           id: 0,
-          toText: '短信验证码登录',
+          toText: '账号密码登录',
           btnText: '验证码登录',
           toId: 1
         },
         {
           id: 1,
-          toText: '账号密码登录',
+          toText: '短信验证码登录',
           btnText: '登录',
           toId: 0
         }

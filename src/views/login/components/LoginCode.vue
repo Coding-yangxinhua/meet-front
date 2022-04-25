@@ -9,7 +9,7 @@
     </van-nav-bar>
     <van-row class="row title">输入手机验证码</van-row>
     <van-row class="row code-label">短信验证码至 &nbsp; {{getMobile}}</van-row>
-    <code-box @checkCode = "checkCode" class="code-box"></code-box>
+    <code-box ref="codeBox" @checkCode = "checkCode" class="code-box"></code-box>
     <van-row class="row send-text">
       <van-count-down v-if="!this.showRendBtn" format="ss秒后重新发送" :time="1000 * 60" @finish="showRendBtn = true" />
       <div class="resend-text" v-else @click="showRendBtn = false">重新发送</div>
@@ -21,6 +21,7 @@
 import { toMobile } from '@/utils/DateFormatUtil'
 import CodeBox from '../../../components/CodeBox'
 import { register, login, sendSms } from '@/api/user'
+import { Toast } from 'vant'
 
 export default {
   name: 'loginCode',
@@ -53,16 +54,26 @@ export default {
       const res = await sendSms(this.user.mobile, this.type)
       console.log(res)
     },
-    checkCode (code) {
-      console.log(this.type)
-      console.log(this.code)
+    async checkCode (code) {
+      let result = null
+      Toast.loading({
+        message: '加载中...',
+        duration: 0,
+        forbidClick: true
+      })
       switch (this.type) {
         case 0:
-          register(code, this.user)
+          result = await register(code, this.user)
           break
         case 1:
-          login(code, this.user)
+          result = await login(code, this.user)
       }
+      Toast.clear()
+      if (result.code === 200) {
+        this.$router.push('/')
+        return
+      }
+      this.$refs.codeBox.$emit('clear')
     }
   }
 }
