@@ -2,7 +2,7 @@ export const navList = [
   {
     navId: 0,
     title: '首页',
-    path: '/',
+    path: '/home',
     inactive: 'home-o',
     active: 'home',
     needLogin: 0

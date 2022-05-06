@@ -41,18 +41,22 @@ export const sendSms = (mobile, type) => {
 }
 
 // 请求用户信息
-export const getUserInfo = () => {
+export const getUserInfo = (userId) => {
   return request({
     method: 'GET',
-    url: 'user/currentUser'
+    url: 'user/getInfo',
+    params: {
+      userId
+    }
   })
 }
 
 // 修改用户信息
-export const updateProfile = (key, value) => {
+export const updateProfile = (user) => {
   return request({
     method: 'POST',
-    url: 'user/updateProfile'
+    url: 'user/updateProfile',
+    data: user
   })
 }
 // 修改用户
@@ -60,5 +64,30 @@ export const updatePassword = (key, value) => {
   return request({
     method: 'POST',
     url: 'user/updatePassword'
+  })
+}
+
+// 获得用户关注信息
+export const getUserBase = (userId) => {
+  return request({
+    method: 'GET',
+    url: 'user/getUserBase',
+    params: {
+      userId
+    }
+  })
+}
+
+/// 更新用户头像
+export const updateAvatar = (file) => {
+  const formData = new FormData()
+  formData.append('file', file.file)
+  return request({
+    method: 'POST',
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    },
+    url: 'user/updateAvatar',
+    data: formData
   })
 }

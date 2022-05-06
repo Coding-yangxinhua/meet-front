@@ -9,7 +9,7 @@
                        class="tab-text"
                        :to="nav.path"
                        icon-prefix="iconfont icon"
-                       @click="setActive(nav.navId)"
+                       @click="setActive(nav.navId, nav.needLogin)"
                        :icon="getPosition===nav.navId? nav.active:nav.inactive">
         {{ nav.title }}
       </van-tabbar-item>
@@ -18,9 +18,8 @@
 </template>
 
 <script>
-import { navList } from '../../data/navData'
+import { navList } from '@/data/navData'
 import { mapGetters, mapMutations } from 'vuex'
-import Cookies from 'js-cookie'
 
 export default {
   name: 'index',
@@ -39,10 +38,13 @@ export default {
     ...mapMutations([
       'setPosition'
     ]),
+    ...mapGetters([
+      'getToken'
+    ]),
     setActive (pos, needLogin) {
       if (needLogin) {
-        const meet = Cookies.get('meet-token')
-        if (meet != null) {
+        const token = this.getToken()
+        if (token != null) {
           this.setPosition(pos)
         }
       } else {
@@ -54,7 +56,10 @@ export default {
 </script>
 
 <style scoped lang="scss">
-
+body html{
+  width: 375px;
+  height: 812px;
+}
 .layout-container{
   width: 100%;
   height: 100%;

@@ -19,18 +19,18 @@
         <van-col span="16">
           <!--  用户粉丝、关注、获赞数、  -->
           <van-row class="text-center info">
-            <van-col span="8">
-              <div class="user-info-num">{{ user.fanNum }}</div>
+            <van-col span="8" @click="toFriendView(1, null, user.nickname)">
+              <div class="user-info-num">{{ user.fanSum }}</div>
               <div class="user-info-label">粉丝</div>
             </van-col>
 
-            <van-col span="8" class="border-row">
-              <div class="user-info-num">{{ user.interestNum }}</div>
+            <van-col span="8" class="border-row" @click="toFriendView(0, null, user.nickname)">
+              <div class="user-info-num">{{ user.followSum }}</div>
               <div class="user-info-label">关注</div>
             </van-col>
 
             <van-col span="8">
-              <div class="user-info-num">{{ user.likeNum }}</div>
+              <div class="user-info-num">{{ user.likeTotal }}</div>
               <div class="user-info-label">获赞</div>
             </van-col>
           </van-row>
@@ -76,6 +76,8 @@ export default {
     meArticle,
     meHistory
   },
+  created () {
+  },
   props: {
     user: {
       type: Object,
@@ -85,6 +87,18 @@ export default {
   data () {
     return {
       active: 0
+    }
+  },
+  methods: {
+    toFriendView (type, queryId, nickname) {
+      this.$router.push({
+        name: 'friend',
+        params: {
+          type,
+          queryId,
+          nickname
+        }
+      })
     }
   }
 }

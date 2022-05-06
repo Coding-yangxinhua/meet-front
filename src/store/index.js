@@ -1,24 +1,32 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { setItem, getItem, removeItem } from '@/utils/storage'
+import { setItem, getItem } from '@/utils/storage'
+import { getCookie, removeCookie } from '@u/CookieUtil'
 
 Vue.use(Vuex)
 
-const TOKEN_KEY = 'token'
+const TOKEN_KEY = 'meet-token'
 const USER_INFO = 'userInfo'
-
+const ALBUM_VIEW = 'album-view'
+const ARTICLE_VIEW = 'article-view'
+const OTHER_VIEW = 'other-view'
 export default new Vuex.Store({
   state: {
     position: 0,
-    isLoading: false,
+    token: getCookie(TOKEN_KEY),
     userInfo: getItem(USER_INFO),
-    tempAlbum: {
-      albumTitle: '',
-      privateInfo: {
-        level: 0,
-        name: '公开'
-      }
-    }
+    albumView: getItem(ALBUM_VIEW),
+    articleView: getItem(ARTICLE_VIEW),
+    otherView: getItem(OTHER_VIEW),
+    localAlbum: {
+      title: '',
+      limitId: 0
+    },
+    localArticle: {
+      content: '',
+      limitId: 0
+    },
+    limits: null
   },
   mutations: {
     setPosition (state, pos) {
@@ -27,40 +35,72 @@ export default new Vuex.Store({
     setAlbum (state, album) {
       state.tempAlbum = album
     },
-    resetAlbum (state) {
-      state.tempAlbum = {
-        albumTitle: '',
-        privateInfo: {
-          level: 0,
-          name: '公开'
-        }
+
+    setArticle (state, article) {
+      state.localArticle = article
+    },
+    setLimits (state, limits) {
+      state.limits = limits
+    },
+    setAlbumView (state, albumView) {
+      state.albumView = albumView
+      setItem(ALBUM_VIEW, albumView)
+    },
+    setArticleView (state, articleView) {
+      state.articleView = articleView
+      setItem(ARTICLE_VIEW, articleView)
+    },
+    setOtherView (state, otherView) {
+      state.otherView = otherView
+      setItem(OTHER_VIEW, otherView)
+    },
+    resetArticle (state) {
+      state.localArticle = {
+        content: '',
+        limitId: 0
       }
     },
-    // 存储token
-    setToken (state, token) {
-      state.token = token
-      setItem(TOKEN_KEY, token)
+    resetAlbum (state) {
+      state.localAlbum = {
+        title: '',
+        limitId: 0
+      }
     },
+    // 移除cookies中token
     removeToken (state) {
       state.token = null
-      removeItem(TOKEN_KEY)
+      removeCookie(TOKEN_KEY)
     },
     // 存储user信息
     setUserInfo (state, userInfo) {
       state.userInfo = userInfo
-      setItem(TOKEN_KEY, userInfo)
+      setItem(USER_INFO, userInfo)
     },
-    getUserInfo (state) {
+    removeUser (state) {
+      state.userInfo = null
+      setItem(USER_INFO, null)
       state.token = null
-      removeItem(TOKEN_KEY)
+      removeCookie(TOKEN_KEY)
     }
   },
   getters: {
-    getTempAlbum (state) {
-      return state.tempAlbum
+    getArticleView (state) {
+      return state.articleView
+    },
+    getLocalAlbum (state) {
+      return state.localAlbum
+    },
+    getLocalArticle (state) {
+      return state.localArticle
     },
     getPosition (state) {
       return state.position
+    },
+    getUserInfo (state) {
+      return state.userInfo
+    },
+    getToken (state) {
+      return state.token
     }
   },
   actions: {

@@ -2,60 +2,59 @@
   <div v-if="article" class="article-single">
     <lazy-component>
       <!--  头部信息：头像、发布信息、姓名-->
-      <van-row class="header">
-        <van-col span="4" class="user-head flex center">
-          <van-image round fit="cover" :src="article.userInfo.avatar"/>
+      <van-row class="header" >
+        <van-col span="4" class="user-head flex center" @click.s.stop="toOtherHome">
+          <van-image round fit="cover" :src="article.userBase.avatar"/>
         </van-col>
         <van-col span="12" class="msg-info">
-          <div class="user-name">{{ article.userInfo.nickname }}</div>
+          <div class="user-name">{{ article.userBase.nickname }}</div>
           <div class="date" >{{ formatDate }}</div>
         </van-col>
         <van-col span="7" class="extra flex">
-          <div v-if="!article.userInfo.isLike" class="not_like flex" >
-            <van-button round class="like_btn" @click="followThisUser">+ 关注</van-button>
+          <div v-if="!isFollow" class="not_like flex" >
+            <van-button round class="like_btn" @click.stop="followThisUser(article.userBase.userId)">+ 关注</van-button>
           </div>
         </van-col>
         <van-col span="1" class="extra_btn">
-          <van-icon v-if="!article.userInfo.isLike" @click="dislikeArticle" name="cross" />
-          <van-icon v-else name="arrow-down" @click="morePopShowing = true" />
+          <van-icon v-if="!article.userBase.isLike" @click="dislikeArticle" name="cross" />
+          <van-icon v-else name="arrow-down" @click.stop="morePopShowing = true" />
         </van-col>
       </van-row>
       <!--  内容主体：文章及配图  -->
-      <van-row class="content" @click="toArticleDetail">
+      <van-row class="content" @click.stop="toArticleDetail">
         <van-row class="text">{{ article.content }}</van-row>
         <van-row class="image" gutter="5">
-          <van-col @click.stop="showImagePreview(article.imageList, index)" v-for="(image, index) in article.imageList" :key="index">
+          <van-col @click.stop="showImagePreview(article.picList, index)" v-for="(image, index) in article.picList" :key="index">
             <van-image
-              width="115"
-              height="115"
+              width="110"
+              height="110"
               fit="cover"
               lazy-load
               :src="image"
             />
           </van-col>
-
         </van-row>
       </van-row>
       <!--  尾部：点赞、评论、转发 -->
       <van-row class="footer">
         <van-col span="8" class="flex center" @click="changeLikeStatus">
-          <span class="iconfont icon-like" :class="{ 'active-color': article.likeStatus }"></span>
+          <span class="iconfont icon-like" :class="{ 'active-color': isLike }"></span>
           <span class="text">
-          <span class="number like-number" v-if="article.likeNum > 0">{{ article.likeNum }}</span>
+          <span class="number like-number" v-if="article.likeSum > 0">{{ article.likeSum }}</span>
           <span class="text" v-else>点赞</span>
         </span>
         </van-col>
         <van-col span="8" class="flex center" @click="toArticleDetail">
           <span class="iconfont icon-comment"></span>
           <span class="text">
-          <span class="number comment-number" v-if="article.commentNum > 0">{{ article.commentNum }}</span>
+          <span class="number comment-number" v-if="article.commentSum > 0">{{ article.commentSum }}</span>
           <span class="text" v-else>评论</span>
         </span>
         </van-col>
         <van-col span="8" class="flex center">
           <span class="iconfont icon-repost"></span>
           <span class="text">
-          <span class="star-number number" v-if="article.repostNum > 0">{{ article.repostNum }}</span>
+          <span class="star-number number" v-if="article.repostSum > 0">{{ article.repostSum }}</span>
           <span v-else>转发</span>
         </span>
         </van-col>
@@ -65,13 +64,30 @@
         <van-cell icon-prefix="iconfont icon" icon="star" value="收藏" @click="starArticle" />
         <van-cell icon-prefix="iconfont icon" icon="cancleLike" value="取消关注" @click="unlikeUser" />
     </van-popup>
+    <van-popup v-model="commentWriteStatus.isShowingWrite"
+               position="bottom"
+               get-container="#app"
+               @close="commentWriteStatus.isShowEmoji = false"
+               :style="{ 'min-height': '30px' }">
+      <comment-reply-box
+        :toReply="article"
+        @uploadComment="uploadComment"
+        :show-emoji="commentWriteStatus.isShowEmoji">
+      </comment-reply-box>
+    </van-popup>
   </div>
 </template>
 
 <script>
 import Vue from 'vue'
 import { articleDateStyle } from '@/utils/DateFormatUtil'
-import { ImagePreview, Lazyload } from 'vant'
+import { ImagePreview, Lazyload, Toast } from 'vant'
+import { changeStatus } from '@/api/userRelation'
+import { Relations } from '@/data/UserRelation'
+import { statusChange } from '@u/OwnUtil'
+import { changeArticleStatus } from '@/api/article'
+import { mapMutations } from 'vuex'
+import CommentReplyBox from '@c/CommentReplyBox'
 
 Vue.use(Lazyload, {
   lazyComponent: true
@@ -79,9 +95,16 @@ Vue.use(Lazyload, {
 export default {
   name: 'article-single',
   components: {
+    CommentReplyBox,
     [ImagePreview.Component.name]: ImagePreview.Component
   },
   props: {
+    showReplyPane: {
+      require: false,
+      default () {
+        return false
+      }
+    },
     article: {
       require: true,
       type: Object
@@ -91,24 +114,65 @@ export default {
     }
   },
   computed: {
+    isLike () {
+      const articleStatus = this.article.articleStatus
+      if (articleStatus === null) {
+        return false
+      }
+      return articleStatus.likeStatus !== null && articleStatus.likeStatus === 1
+    },
+    isFollow () {
+      const user = this.article.userBase
+      return user.relation > 0 || user.userId === this.selfInfo.userId
+    },
     formatDate () {
       return articleDateStyle(this.article.gmtCreate)
+    },
+    selfInfo () {
+      return this.$store.state.userInfo
     }
   },
   data () {
     return {
-      morePopShowing: false
+      morePopShowing: false,
+      commentWriteStatus: {
+        isShowingWrite: false,
+        isShowEmoji: false,
+        content: ''
+      }
     }
   },
   methods: {
+    ...mapMutations([
+      'setArticleView'
+    ]),
+    async toOtherHome () {
+      this.$router.push({
+        name: 'other',
+        params: {
+          queryId: this.article.userBase.userId
+        }
+      })
+    },
     // 点赞文章
-    changeLikeStatus () {
-      this.article.likeStatus = !this.article.likeStatus
-      if (this.article.likeStatus) {
-        this.article.likeNum += 1
-        return
+    async changeLikeStatus () {
+      let articleStatus = this.article.articleStatus
+      if (articleStatus === null) {
+        articleStatus = {
+          articleId: this.article.articleId,
+          likeStatus: 1
+        }
+        this.article.articleStatus = articleStatus
+      } else {
+        articleStatus.articleId = this.article.articleId
+        articleStatus.likeStatus = statusChange(articleStatus.likeStatus)
       }
-      this.article.likeNum -= 1
+      const res = await changeArticleStatus(articleStatus)
+      if (res.code === 200) {
+        const count = articleStatus.likeStatus === 0 ? -1 : 1
+        this.article.articleStatus.likeStatus = articleStatus.likeStatus
+        this.article.likeSum += count
+      }
     },
     // 收藏文章
     starArticle () {
@@ -119,13 +183,31 @@ export default {
       this.morePopShowing = false
     },
     // 关注
-    followThisUser () {
-      this.article.userInfo.isLike = true
-      console.log(this.article.userInfo)
+    async followThisUser (userId) {
+      const res = await changeStatus(userId, Relations.FOLLOW)
+      if (res.code === 200) {
+        this.article.userBase.relation = Relations.FOLLOW
+      }
+      Toast({
+        duration: 1000,
+        message: res.message
+      })
+    },
+    uploadComment () {
+      this.commentWriteStatus.isShowingWrite = false
+      this.commentWriteStatus.content = ''
+      this.$router.go(0)
     },
     // 前往文章详情页
     toArticleDetail () {
-      this.$router.push({ name: 'article-detail', params: { articleId: this.article.articleId } })
+      if (this.showReplyPane) {
+        this.commentWriteStatus.isShowingWrite = true
+        return
+      }
+      this.$router.push('article/detail')
+      this.setArticleView({
+        ...this.article
+      })
     },
     // 不感兴趣按钮
     dislikeArticle () {

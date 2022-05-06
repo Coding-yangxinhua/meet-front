@@ -1,17 +1,17 @@
 <template>
   <div class="comment-single-container">
     <van-row @click="showReplyBox">
-      <van-col @click.stop="toUserDetail" span="4" class="avatarPane">
-        <van-image :src="comment.user.avatar"/>
+      <van-col @click.stop="toUserDetail(comment.user.userId)" span="4" class="avatarPane">
+        <van-image fit="cover" :src="comment.user.avatar"/>
       </van-col>
       <van-col span="20" class="mainPane">
         <van-row class="header flex-col" >
           <div class="nickname">{{comment.user.nickname}}</div>
-          <div class="date">{{comment.gmtCreate}}</div>
+          <div class="date">{{formatDate}}</div>
         </van-row>
         <van-row class="flex content-row">
           <div @click.stop="toUserDetail" class="flex" v-if="showAtText">
-            回复<div class="special-blue">&nbsp;@{{comment.replyUser.nickname}}&nbsp;:</div>
+            回复<div class="special-blue" @click.stop="toUserDetail(comment.replyUser.userId)">&nbsp;@{{comment.replyUser.nickname}}&nbsp;:</div>
           </div>
           <div ref="commentRef" class="content" :class="{'hidden-box': !status}">{{comment.content}}</div>
         </van-row>
@@ -23,17 +23,19 @@
         </van-row>
         <van-row class="function">
           <van-col @click.stop="likeComment" span="4">
-            <van-icon name="good-job-o" :class="{'special-pink': comment.likeStatus}"/>
+            <van-icon name="good-job-o" :class="{'special-pink': isLike}"/>
+            <span class="number comment-number" v-if="comment.likeSum > 0">{{ comment.likeSum }}</span>
           </van-col>
           <van-col @click.stop="dislikeComment" span="4">
-            <van-icon name="good-job-o" :class="{'special-pink': comment.dislikeStatus}"  style=" transform:rotate(-180deg);"/>
+            <van-icon name="good-job-o" :class="{'special-pink': isDislike}"  style=" transform:rotate(-180deg);"/>
+            <span class="number comment-number" v-if="comment.dislikeSum > 0">{{ comment.dislikeSum }}</span>
           </van-col>
           <van-col @click.stop="replyComment" span="4">
             <van-icon name="comment-o" />
           </van-col>
           <van-col
             @click.stop="showDialog"
-            v-if="showDialogText"
+            v-if="showReply"
             class="dialog-text"
             span="12">
             查看对话
@@ -43,12 +45,12 @@
           @click.stop="showCommentReply"
           class="reply"
           v-if="showReplyText">
-          <van-row class="flex reply-main" v-for="reply in limitReplyHot" :key="reply.commentId">
+          <van-row class="flex reply-main" v-for="reply in comment.childrenComments" :key="reply.commentId">
             <div class="reply-name">{{reply.user.nickname}}:&nbsp;</div>
             <div class="reply-content" @click.stop="showCommentReply(reply.commentId)">{{reply.content}}</div>
           </van-row>
-          <van-row class="more-reply" v-if="comment.replyHot.length > 3">
-            <van-col class="count">共{{comment.replyHot.length}}条回复</van-col>
+          <van-row class="more-reply" v-if="comment.commentSum > 3">
+            <van-col class="count">共{{comment.commentSum}}条回复</van-col>
             <van-col class="right-arrow">&nbsp;></van-col>
           </van-row>
         </van-row>
@@ -72,26 +74,24 @@
                get-container="#app"
                closeable
                :style="{ 'height': '60%' }">
-      <comment-single :comment="comment"></comment-single>
+      <comment-single :comment="comment" :is-root="false"></comment-single>
       <comment-single
         :comment="reply"
-        :show-at-text="reply.parentId !== comment.commentId"
-        :show-dialog-text="reply.parentId !== comment.commentId"
         v-for="reply in replyStatus.replyList"
         :key="reply.commentId"
       />
     </van-popup>
-    <van-popup v-if="showDialogText" v-model="dialogStatus.isShowingDialog"
+    <van-popup v-model="dialogStatus.isShowingDialog"
                position="bottom"
                round
                get-container="#app"
                duration="0.2"
                closeable
                :style="{ 'height': '60%' }">
-      <comment-single :comment="dialogStatus.parentComment"></comment-single>
+      <comment-single :comment="dialogStatus.parentComment" :is-root="false"></comment-single>
       <comment-single
         v-for="reply in dialogStatus.replyList"
-        :show-at-text="true"
+        :is-reply = false
         :comment="reply"
         :key="reply.commentId"
       />
@@ -100,35 +100,65 @@
 </template>
 
 <script>
-import { articleDateStyle } from '../utils/DateFormatUtil'
-import { replyList } from '../data/CommentData'
+import { articleDateStyle } from '@u/DateFormatUtil'
 import CommentReplyBox from './CommentReplyBox'
+import { changeCommentStatus, listCommentChildren, listCommentSecond } from '@/api/comment'
+import { statusChange } from '@u/OwnUtil'
 
 export default {
   name: 'comment-single',
   components: { CommentReplyBox },
   props: {
-    // 展示回复文本
-    showReplyText: {
-      default () {
-        return false
-      }
+    isRoot: {
+      require: false
     },
-    // 弹出对话文本
-    showDialogText: {
-      default () {
-        return false
-      }
-    },
-    // 展示@文本
-    showAtText: {
-      default () {
-        return false
-      }
+    isReply: {
+      require: false
     },
     comment: {
       required: true,
       type: Object
+    }
+  },
+  computed: {
+    formatDate () {
+      return articleDateStyle(this.comment.gmtCreate)
+    },
+    // 展示@文本
+    showAtText () {
+      return this.comment.secondId !== null
+    },
+    // 展示 对话
+    showReply () {
+      if (this.isReply == null) {
+        return this.comment.secondId !== null
+      } else {
+        return this.isReply
+      }
+    },
+    // 是否点赞
+    isLike () {
+      const commentStatus = this.comment.commentStatus
+      if (commentStatus === null) {
+        return false
+      }
+      return commentStatus.likeStatus !== null && commentStatus.likeStatus === 1
+    },
+    // 是否点踩
+    isDislike () {
+      const commentStatus = this.comment.commentStatus
+      if (commentStatus === null) {
+        return false
+      }
+      return commentStatus.dislikeStatus !== null && commentStatus.dislikeStatus === 1
+    },
+    // 展示回复文本
+    showReplyText () {
+      if (this.isRoot == null) {
+        return this.comment.firstId === null && this.comment.commentSum > 0
+      } else {
+        return this.isRoot
+      }
     }
   },
   mounted () {
@@ -155,42 +185,92 @@ export default {
       replyStatus: {
         isShowingReply: false,
         replyList: null
+      },
+      pageInfo: {
+        page: 1,
+        size: 10
       }
     }
   },
-  computed: {
-    formatDate () {
-      return articleDateStyle(this.comment.gmtCreate)
-    },
-    limitReplyHot () {
-      return this.comment.replyHot.slice(0, 3)
-    }
-  },
+
   methods: {
     // 展示第一级弹窗
-    showCommentReply (pos = 0) {
-      this.replyStatus.isShowingReply = true
-      this.replyStatus.replyList = replyList
+    async showCommentReply (pos = 0) {
+      const res = await listCommentChildren({
+        firstId: this.comment.commentId,
+        page: this.pageInfo.page,
+        size: this.pageInfo.size
+      })
+      if (res.code === 200) {
+        this.replyStatus.replyList = res.result
+        this.replyStatus.isShowingReply = true
+      }
     },
     // 展示对话
-    showDialog () {
-      this.dialogStatus.isShowingDialog = true
-      this.dialogStatus.parentComment = replyList.filter(reply => reply.commentId === this.comment.parentId)[0]
-      this.dialogStatus.replyList = replyList.filter(reply => reply.parentId === this.comment.parentId)
+    async showDialog () {
+      console.log(this.comment)
+      const res = await listCommentSecond({
+        secondId: this.comment.secondId,
+        ...this.pageInfo
+      })
+      if (res.code === 200) {
+        const data = res.result
+        this.dialogStatus.parentComment = data[0]
+        this.dialogStatus.replyList = data.splice(1, data.length)
+        this.dialogStatus.isShowingDialog = true
+      }
     },
     // 点赞评论
-    likeComment () {
-      this.comment.likeStatus = !this.comment.likeStatus
+    async likeComment () {
+      let commentStatus = this.comment.commentStatus
+      if (commentStatus === null) {
+        commentStatus = {
+          commentId: this.comment.commentId,
+          likeStatus: 1
+        }
+        this.comment.commentStatus = commentStatus
+      } else {
+        commentStatus.commentId = this.comment.commentId
+        commentStatus.likeStatus = statusChange(commentStatus.likeStatus)
+      }
+      const res = await changeCommentStatus(commentStatus)
+      if (res.code === 200) {
+        const count = commentStatus.likeStatus === 0 ? -1 : 1
+        this.comment.commentStatus.likeStatus = commentStatus.likeStatus
+        this.comment.likeSum += count
+      }
     },
     // 点踩评论
-    dislikeComment () {
-      this.comment.dislikeStatus = !this.comment.dislikeStatus
+    async dislikeComment () {
+      let commentStatus = this.comment.commentStatus
+      if (commentStatus === null) {
+        commentStatus = {
+          commentId: this.comment.commentId,
+          dislikeStatus: 1
+        }
+        this.comment.commentStatus = commentStatus
+      } else {
+        commentStatus.commentId = this.comment.commentId
+        commentStatus.dislikeStatus = statusChange(commentStatus.dislikeStatus)
+      }
+      const res = await changeCommentStatus(commentStatus)
+      if (res.code === 200) {
+        const count = commentStatus.dislikeStatus === 0 ? -1 : 1
+        this.comment.commentStatus.dislikeStatus = commentStatus.dislikeStatus
+        this.comment.dislikeSum += count
+      }
     },
     // 回复评论
     replyComment () {
     },
     // 去用户页面
-    toUserDetail () {
+    toUserDetail (userId) {
+      this.$router.push({
+        name: 'other',
+        params: {
+          queryId: userId
+        }
+      })
     },
     // 显示消息回复框
     showReplyBox () {
@@ -199,6 +279,7 @@ export default {
     //
     uploadComment () {
       this.commentWriteStatus.isShowingWrite = false
+      this.$router.go(0)
     }
   }
 }
@@ -226,6 +307,8 @@ export default {
   .avatarPane {
     padding: 8px;
     .van-image {
+      width: 40px;
+      height: 40px;
       ::v-deep img {
         border-radius: 50%;
       }

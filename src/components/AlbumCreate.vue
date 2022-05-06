@@ -1,11 +1,11 @@
 <template>
   <div class="albumCreateContainer">
-    <van-nav-bar left-text="返回" title="新建相册" right-text="完成" @click-left="$router.back()" @click-right="addAlbum"></van-nav-bar>
-    <van-field class="albumTitle" v-model="album.albumTitle" type="text" placeholder="填写相册名称" />
-    <van-row class="private" @click="$router.push('/album/private')">
+    <van-nav-bar left-text="返回" title="新建相册" right-text="完成" @click-left="$router.back()" @click-right="uploadAlbum"></van-nav-bar>
+    <van-field class="albumTitle" v-model="album.title" type="text" placeholder="填写相册名称" />
+    <van-row class="private" @click="$router.push('/album/limit')">
       <van-col class="privateText" span="4">权限</van-col>
       <van-col class="privateLevel" span="18">
-        {{album.privateInfo.name}}
+        {{ getDictLabel }}
       </van-col>
       <van-col class="privateArrow" span="2">
         <van-icon class="arrow" name="arrow" />
@@ -15,19 +15,55 @@
 </template>
 
 <script>
-import { albumList } from '../data/AlbumData'
+import { getDictLabelById } from '@u/OwnUtil'
+import { getItemsByType, ItemType } from '@/api/DictItem'
+import { Toast } from 'vant'
+import { createAlbum } from '@/api/album'
+import { mapMutations } from 'vuex'
 
 export default {
   name: 'album-create',
+  computed: {
+    getDictLabel () {
+      return getDictLabelById(this.album.limitId, this.limits)
+    }
+  },
+  created () {
+    this.limits = this.$store.state.limits
+    if (this.limits === null) {
+      this.getLimit()
+    }
+  },
   data () {
     return {
-      album: this.$store.getters.getTempAlbum
+      album: this.$store.state.localAlbum
     }
   },
   methods: {
-    addAlbum () {
-      albumList.push(this.album)
-      this.$router.back()
+    ...mapMutations([
+      'resetAlbum',
+      'setLimits'
+    ]),
+    async getLimit () {
+      const res = await getItemsByType(ItemType.LIMIT)
+      if (res.code === 200) {
+        this.limits = res.result
+        this.setLimits(this.limits)
+      }
+    },
+    async uploadAlbum () {
+      Toast.loading({
+        duration: 10000,
+        message: '发布中...'
+      })
+      const res = await createAlbum(this.album)
+      if (res.code === 200) {
+        this.resetAlbum()
+        this.$router.go(-1)
+      }
+      Toast({
+        message: res.message
+      })
     }
   }
 }
@@ -35,7 +71,7 @@ export default {
 
 <style scoped lang="scss">
 .albumTitle {
-  font-size: 22px;
+  font-size: 20px;
 }
 .private {
   background-color: #fff;

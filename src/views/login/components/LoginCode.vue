@@ -22,6 +22,7 @@ import { toMobile } from '@/utils/DateFormatUtil'
 import CodeBox from '../../../components/CodeBox'
 import { register, login, sendSms } from '@/api/user'
 import { Toast } from 'vant'
+import { mapMutations } from 'vuex'
 
 export default {
   name: 'loginCode',
@@ -50,30 +51,37 @@ export default {
     }
   },
   methods: {
-    async sendLoginSms () {
-      const res = await sendSms(this.user.mobile, this.type)
-      console.log(res)
+    ...mapMutations([
+      'setUserInfo'
+    ]),
+    sendLoginSms () {
+      sendSms(this.user.mobile, this.type)
     },
     async checkCode (code) {
-      let result = null
+      let res = null
       Toast.loading({
-        message: '加载中...',
-        duration: 0,
+        message: '登录中...',
+        duration: 5000,
         forbidClick: true
       })
       switch (this.type) {
         case 0:
-          result = await register(code, this.user)
+          res = await register(code, this.user)
           break
         case 1:
-          result = await login(code, this.user)
+          res = await login(code, this.user)
       }
       Toast.clear()
-      if (result.code === 200) {
-        this.$router.push('/')
+      Toast({
+        message: res.message,
+        duration: 1000
+      })
+      if (res.code === 200) {
+        this.$router.push('/home')
+        this.setUserInfo(res.result)
         return
       }
-      this.$refs.codeBox.$emit('clear')
+      this.$refs.codeBox.clear()
     }
   }
 }

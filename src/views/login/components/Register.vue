@@ -16,7 +16,7 @@
           placeholder="请输入手机号"
         />
         <div class="login-btn-warp">
-          <van-button class="login-btn" :class="{'login-btn-disable': !checkPass}" size="large">下一步</van-button>
+          <van-button class="login-btn" :class="{'login-btn-disable': !checkPass}" size="large" @click="toRegisterCode">下一步</van-button>
         </div>
       </div>
     </van-form>
@@ -40,6 +40,20 @@ export default {
   computed: {
     checkPass () {
       return isMobile(this.user.mobile)
+    }
+  },
+  methods: {
+    toRegisterCode () {
+      this.$router.push({
+        name: 'register-code',
+        params: {
+          // 1为登录
+          type: 0,
+          user: {
+            mobile: this.user.mobile
+          }
+        }
+      })
     }
   }
 }

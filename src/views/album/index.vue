@@ -2,13 +2,13 @@
   <div class="album-container">
     <van-nav-bar title="相册" left-arrow @click-left="$router.back()" />
     <van-row class="albums-row" type="flex" justify="space-between">
-      <van-col class="albums-col" @click="toCreateAlbum" v-if="user.userId == null">
+      <van-col class="albums-col" @click="toCreateAlbum" v-if="userId == null">
         <div class="create-album flex">
           <van-icon name="photo-o" />
           <div>新建相册</div>
         </div>
       </van-col>
-      <van-col class="albums-col" v-for="album in albums" :key="album.albumId" @click="toAlbumDetail(album.albumId, album.albumTitle)">
+      <van-col class="albums-col" v-for="album in albums" :key="album.albumId" @click="toAlbumDetail(album.albumId, album.title)">
         <album-single :photo-album="album"></album-single>
       </van-col>
     </van-row>
@@ -18,41 +18,47 @@
 <script>
 
 import AlbumSingle from '../../components/AlbumSingle'
-import { albumList } from '../../data/AlbumData'
 import { mapMutations } from 'vuex'
+import { getAlbumsByUid } from '@/api/album'
 export default {
   name: 'album-list',
   components: {
     AlbumSingle
   },
   created () {
+    this.userId = this.$store.state.otherView.userId
+    this.getAlbumListByUid()
   },
   data () {
     return {
-      user: {
-        userId: this.$route.params.userId
-      },
-      albums: albumList
+      userId: null,
+      albums: null
     }
   },
   methods: {
     ...mapMutations([
-      'resetAlbum'
+      'resetAlbum',
+      'setAlbumView'
     ]),
+    async getAlbumListByUid () {
+      const res = await getAlbumsByUid(this.userId)
+      if (res.code === 200) {
+        this.albums = res.result
+      }
+    },
     // 创建相册
     toCreateAlbum () {
       this.resetAlbum()
       this.$router.push('/album/create')
     },
     // 去相册详情
-    toAlbumDetail (albumId, albumTitle) {
-      this.$router.push({
-        name: 'album-detail',
-        params: {
-          albumId: albumId,
-          albumTitle: albumTitle
-        }
+    toAlbumDetail (albumId, title) {
+      this.setAlbumView({
+        albumId,
+        title,
+        userId: this.userId
       })
+      this.$router.push('album/detail')
     }
   }
 }

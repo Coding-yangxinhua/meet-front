@@ -10,10 +10,10 @@
           :src="photoAlbum.cover"/>
       </div>
       <div class="info flex-col">
-        <div class="title">{{photoAlbum.albumTitle}}</div>
+        <div class="title">{{photoAlbum.title}}</div>
         <div class="basic flex">
-          <div class="photo_sum">{{photoAlbum.photoSum}} 张</div>
-          <div v-if="photoAlbum.privateInfo.level !== 0 " class="private">{{photoAlbum.privateInfo.name}}</div>
+          <div class="photo_sum">{{photoAlbum.total}} 张</div>
+          <div class="private">{{ photoAlbum.limitDesc }}</div>
         </div>
       </div>
     </div>
@@ -21,19 +21,21 @@
 </template>
 
 <script>
-import { albumList } from '../data/AlbumData'
 import { Lazyload } from 'vant'
 import Vue from 'vue'
+import { getDictLabelById } from '@u/OwnUtil'
 
 Vue.use(Lazyload)
 export default {
   name: 'album-single',
+  computed: {
+    getDictLabel () {
+      return getDictLabelById(this.photoAlbum.limitId, this.limits)
+    }
+  },
   props: {
     photoAlbum: {
-      // required: true,
-      default: () => {
-        return albumList[0]
-      }
+      require: true
     }
   },
   methods: {
@@ -58,7 +60,7 @@ export default {
      }
      .info {
        .title {
-         font-size: 16px;
+         font-size: 15px;
          line-height: 25px;
          font-weight: bolder;
        }

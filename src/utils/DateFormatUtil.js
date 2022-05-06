@@ -19,6 +19,9 @@ export const articleDateStyle = articleTime => {
   return dateText
 }
 export const normalDate = timestamp => {
+  if (timestamp === undefined || timestamp === null) {
+    return
+  }
   const dateObj = timeToDateObj(timestamp)
   return `${dateObj.year}-${dateObj.month}-${dateObj.day}`
 }
@@ -35,13 +38,12 @@ export const timeToYear = timestamp => {
 
 // 时间戳转换为date对象
 export const timeToDateObj = timestamp => {
-  timestamp = timestamp.toString().substr(0, 10)
   // 时间戳为10位需*1000，时间戳为13位的话不需乘1000
-  const date = new Date(timestamp * 1000)
+  const date = new Date(parseInt(timestamp))
   return {
     year: date.getFullYear(),
     month: (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1),
-    day: date.getDay() + 1 < 10 ? '0' + (date.getDay() + 1) : date.getDay() + 1,
+    day: date.getDate() + 1 < 10 ? '0' + (date.getDate() + 1) : date.getDate() + 1,
     hour: date.getHours(),
     minute: date.getMinutes(),
     second: date.getSeconds()

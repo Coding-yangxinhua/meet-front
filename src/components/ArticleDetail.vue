@@ -8,7 +8,7 @@
       fixed
       placeholder
     />
-    <article-single :article="article"></article-single>
+    <article-single :show-reply-pane="true" :article="article"></article-single>
     <van-tabs
       sticky
       lazy-render
@@ -28,31 +28,31 @@
 </template>
 
 <script>
-import { simuArticleList } from '@/data/ArticlesData'
 import ArticleSingle from '@/components/ArticleSingle'
 import CommentList from './CommentList'
+import { getArticleById } from '@/api/article'
 
 export default {
   name: 'article-detail',
   components: { CommentList, ArticleSingle },
   created () {
-    this.initArticle()
+    this.article = this.$store.state.articleView
+    this.getArticleDetail()
   },
   data () {
     return {
       active: 1,
-      articleId: this.$route.params.articleId,
       article: null
     }
   },
 
   methods: {
-    initArticle () {
-      for (const article of simuArticleList) {
-        if (article.articleId === this.articleId) {
-          this.article = article
-          console.log(this.article)
-        }
+    async getArticleDetail () {
+      const res = await getArticleById({
+        articleId: this.article.articleId
+      })
+      if (res.code === 200) {
+        this.article = res.result
       }
     }
   }

@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapMutations, mapState } from 'vuex'
 import { Dialog } from 'vant'
 export default {
   name: 'me-home',
@@ -25,24 +25,26 @@ export default {
     })
   },
   methods: {
+    ...mapMutations([
+      'removeUser',
+      'setOtherView'
+    ]),
     // 去相册
     toAlbum () {
-      this.$router.push({
-        name: 'album',
-        params: {
-          userId: null
-        }
+      this.setOtherView({
+        userId: null
       })
+      this.$router.push('album')
     },
     // 退回登录
     loginOutConfirm () {
+      const that = this
       Dialog.confirm({
-        title: 'TO MEET',
+        title: 'MEET',
         message: '确定退出当前账号吗？'
       }).then(() => {
-        this.$store.commit('setUser', null)
-
-        this.$router.go(0)
+        that.removeUser()
+        that.$router.go(0)
       })
     }
   }

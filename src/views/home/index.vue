@@ -15,7 +15,7 @@
     <!-- 频道列表 -->
     <van-tabs  swipeable>
       <van-tab v-for="item in channels" :title="item.channelName" :key="item.channelId">
-        <article-list :channel="item"></article-list>
+        <home-article-list :channel="item"></home-article-list>
       </van-tab>
     </van-tabs>
     <!-- /频道列表 -->
@@ -24,11 +24,11 @@
 
 <script>
 
-import ArticleList from '../../components/ArticleList'
 import { simuChannelList } from '@/data/ArticlesData'
+import HomeArticleList from '@v/home/components/HomeArticleList'
 export default {
   components: {
-    ArticleList
+    HomeArticleList
   },
   data () {
     return {

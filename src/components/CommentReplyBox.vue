@@ -7,7 +7,7 @@
             class="send-reply-field input-box"
             :border="true"
             @focusout="resetPos"
-            :placeholder="'回复@ ' + toReply.user.nickname + ':'"
+            :placeholder="getPlaceHolder"
             type="textarea"
             :autosize="{maxHeight: 120}"
             rows="1"
@@ -22,7 +22,6 @@
           发布
         </div>
       </div>
-      <divider />
       <van-row class="toolbar-box">
         <van-icon class="smile" @click="toolbarStatus.showEmoji = !toolbarStatus.showEmoji" name="smile" />
       </van-row>
@@ -40,8 +39,8 @@
 
 <script>
 import EmojiToolBar from './EmojiToolBar'
-import { replyList } from '../data/CommentData'
-import { userList } from '../data/UsersData'
+import { createComment } from '@/api/comment'
+import { Toast } from 'vant'
 export default {
   name: 'comment-reply-box',
   components: { EmojiToolBar },
@@ -54,6 +53,18 @@ export default {
       default () {
         return false
       }
+    }
+  },
+  computed: {
+    getPlaceHolder () {
+      let nickname = null
+      if (this.toReply.user != null) {
+        nickname = this.toReply.user.nickname
+      }
+      if (nickname == null) {
+        return '发一条友善的评论'
+      }
+      return '回复@ ' + nickname + ':'
     }
   },
   created () {
@@ -87,14 +98,18 @@ export default {
       this.inputPos = pos
     },
     // 发布评论
-    uploadCommentChild () {
-      this.fromReply.user = userList[0]
-      this.fromReply.articleId = 1
-      this.fromReply.parentId = this.toReply.commentId
-      this.fromReply.gmtCreate = '2022-1-5'
-      this.fromReply.replyUser = userList.filter(user => user.userId === this.toReply.user.userId)[0]
-      replyList.push(this.fromReply)
-      this.$emit('uploadComment')
+    async uploadCommentChild () {
+      const res = await createComment({
+        content: this.fromReply.content,
+        articleId: this.toReply.articleId,
+        parentId: this.toReply.commentId
+      })
+      if (res.code === 200) {
+        this.$emit('uploadComment')
+      }
+      Toast({
+        message: res.message
+      })
     }
   }
 }

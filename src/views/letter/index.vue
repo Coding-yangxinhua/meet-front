@@ -4,8 +4,8 @@
       title="消息"
       left-arrow
       @click-left="$router.back()">
-      <template #right>
-        <van-icon name="friends-o" size="24" />
+      <template #right >
+        <van-icon @click="toFriendPage" name="friends-o" size="24" />
       </template>
     </van-nav-bar>
     <van-grid
@@ -24,7 +24,7 @@
       finished-text="没有更多了"
       @load="loadLetter"
     >
-      <div v-for="chat in chats" :key="chat.chatId" @click="toChatDetail(chat.user.userId)">
+      <div v-for="chat in chats" :key="chat.chatId" @click="toChatDetail(chat.user)">
         <chat-single
           @deleteChat="deleteChat"
           @setTopChat="setTopChat"
@@ -37,8 +37,8 @@
 </template>
 
 <script>
-import { chatList } from '../../data/LetterData'
 import ChatSingle from '../../components/ChatSingle'
+import { getChatList } from '@/api/chat'
 
 export default {
   name: 'letter',
@@ -54,11 +54,35 @@ export default {
         isLoading: false,
         isFinished: false
       },
-      chats: chatList
+      chats: [],
+      pageInfo: {
+        page: 1,
+        size: 10
+      }
     }
   },
   methods: {
-    loadLetter () {
+    async loadLetter () {
+      const res = await getChatList({
+        ...this.pageInfo
+      })
+      if (res.code === 200) {
+        const records = res.result.records
+        if (records.length < this.pageInfo.size) {
+          this.letterListStatus.isFinished = true
+        }
+        this.chats.push(...records)
+        this.letterListStatus.isLoading = false
+        this.pageInfo.page = res.result.current + 1
+      }
+    },
+    toFriendPage () {
+      this.$router.push({
+        name: 'friend',
+        params: {
+          nickname: this.$store.state.userInfo.nickname
+        }
+      })
     },
     // 删除聊天
     deleteChat (chatId) {
@@ -79,11 +103,11 @@ export default {
       }
       this.chats = tempChatList
     },
-    toChatDetail (userId) {
+    toChatDetail (user) {
       this.$router.push({
         name: 'letter-chat',
         params: {
-          userId: userId
+          destUser: user
         }
       })
     }

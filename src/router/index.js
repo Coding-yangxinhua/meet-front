@@ -11,7 +11,7 @@ const routes = [
     children: [
       // 首页
       {
-        path: '',
+        path: '/home',
         component: () => import('@v/home/')
       },
       // 许愿墙
@@ -38,17 +38,33 @@ const routes = [
     name: 'login-code',
     component: () => import('@v/login/components/LoginCode')
   },
+  {
+    path: '/register/code',
+    name: 'register-code',
+    component: () => import('@v/login/components/RegisterCode')
+  },
   // 用户资料
   {
     path: '/me/profile',
     name: 'me-profile',
     component: () => import('@v/me/components/MeProfile')
   },
+  {
+    path: '/friend',
+    name: 'friend',
+    component: () => import('@v/friend/index')
+  },
   // 用户资料 -> 修改姓名
   {
     path: '/me/profile/nickname',
     name: 'me-profile-nickname',
     component: () => import('@v/me/components/MeProfileNickname')
+  },
+  // 其他用户界面
+  {
+    path: '/other',
+    name: 'other',
+    component: () => import('@v/other/index')
   },
   // 用户相册
   {
@@ -67,9 +83,14 @@ const routes = [
     component: () => import('@c/AlbumCreate')
   },
   {
-    path: '/album/private',
-    name: 'album-private',
-    component: () => import('@c/AlbumPrivateSelect')
+    path: '/album/limit',
+    name: 'album-limit',
+    component: () => import('@c/AlbumLimitSelect')
+  },
+  {
+    path: '/album/photo/upload',
+    name: 'album-photo-upload',
+    component: () => import('@v/album/components/AlbumPhotoUpload')
   },
   // 文章详情
   {
@@ -82,6 +103,12 @@ const routes = [
     path: '/article/write',
     name: 'article-write',
     component: () => import('@/components/ArticleWrite')
+  },
+  // 文章权限
+  {
+    path: '/article/limit',
+    name: 'article-limit',
+    component: () => import('@c/ArticleLimitSelect')
   },
   // 私信页面
   {

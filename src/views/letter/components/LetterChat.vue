@@ -1,44 +1,54 @@
 <template>
-  <div class="chat-container flex-col" v-if="user != null">
+  <div class="chat-container flex-col" v-if="destUser != null">
     <van-row>
       <van-nav-bar
-        :left-text="user.nickname"
+        :left-text="destUser.nickname"
         left-arrow
         fixed
+        placeholder
         @click-left="$router.back()">
         <template #right>
           <van-icon color="#646566" name="setting" size="20"/>
         </template>
       </van-nav-bar>
     </van-row>
-    <div style="height: 58px"></div>
-    <van-row class="not-like-box" v-if="!user.isLike">
-      <van-col span="12" class="box-item flex center van-hairline--right">
-        <van-row class="flex center">
-          <van-col class="box-icon flex center">
-            <van-icon class="iconfont" class-prefix='icon' name="bell-mute" />
-          </van-col>
-          <van-col class="flex-col center">
-            <div class="content">不接受推送</div>
-            <div class="label">通知正常接收</div>
-          </van-col>
-        </van-row>
-      </van-col>
-      <van-col span="12" class="box-item flex center">
-        <div class="box-icon">
-          <van-icon class="iconfont" class-prefix='icon' name="addLike"></van-icon>
-        </div>
-        <div class="">加关注</div>
-      </van-col>
-    </van-row>
+<!--    <van-row class="not-like-box" v-if="!destUser.isLike">-->
+<!--      <van-col span="12" class="box-item flex center van-hairline&#45;&#45;right">-->
+<!--        <van-row class="flex center">-->
+<!--          <van-col class="box-icon flex center">-->
+<!--            <van-icon class="iconfont" class-prefix='icon' name="bell-mute" />-->
+<!--          </van-col>-->
+<!--          <van-col class="flex-col center">-->
+<!--            <div class="content">不接受推送</div>-->
+<!--            <div class="label">通知正常接收</div>-->
+<!--          </van-col>-->
+<!--        </van-row>-->
+<!--      </van-col>-->
+<!--      <van-col span="12" class="box-item flex center">-->
+<!--        <div class="box-icon">-->
+<!--          <van-icon class="iconfont" class-prefix='icon' name="addLike"></van-icon>-->
+<!--        </div>-->
+<!--        <div class="">加关注</div>-->
+<!--      </van-col>-->
+<!--    </van-row>-->
     <van-row class="message-main" @click="showEmoji = false">
-      <message-single v-for="message in messages"
-                      :message="message"
-                      :key="message.messageId"
-                      :avatar="user.avatar"
-                      :is-left="message.sendId !== user.userId"
+      <van-list
+        direction="up"
+        v-model="messageStatus.loading"
+        :finished="messageStatus.finished"
+        finished-text="没有更多了"
+        @load="getMessages"
       >
-      </message-single>
+        <message-single v-for="(message, index) in messages"
+                        :class="{'latest-message': index === messages.length - 1}"
+                        :message="message"
+                        :key="message.messageId"
+                        :avatar="message.srcId === srcUser.userId? srcUser.avatar:destUser.avatar"
+                        :is-left="message.srcId === destUser.userId"
+        >
+        </message-single>
+      </van-list>
+
     </van-row>
     <van-row class="flex-col">
       <div  class="message-box flex center">
@@ -64,7 +74,7 @@
         <van-col span="5" class="flex center">
           <van-button :disabled="message.content === ''"
                       round
-                      @click="sendMessage"
+                      @click="onSendMessage"
                       class="send-btn"
                       :class="{'send-btn-active': message.content !== ''}"
           >发送</van-button>
@@ -82,38 +92,128 @@
 </template>
 
 <script>
-import { userList } from '../../../data/UsersData'
-import { messageList } from '../../../data/MessageJson'
 import EmojiToolBar from '../../../components/EmojiToolBar'
 import MessageSingle from '../../../components/MessageSingle'
-import { mapMutations } from 'vuex'
+import { getMessageList, sendMessage } from '@/api/chat'
 
+import SockJS from 'sockjs-client'
+import Stomp from 'stompjs'
 export default {
   name: 'letter-chat',
   components: { MessageSingle, EmojiToolBar },
   created () {
-    const userId = this.$route.params.userId
-    this.user = userList.filter(user => user.userId === userId)[0]
-    if (this.user === null || this.user === undefined) {
+    this.destUser = this.$route.params.destUser
+    this.srcUser = this.$store.state.userInfo
+    if (this.destUser === null || this.destUser === undefined) {
       this.$router.back()
     }
+    this.initWebSocket()
   },
   computed: {
-    ...mapMutations(['getUserInfo'])
   },
   data () {
     return {
-      own: null,
-      user: null,
+      messageStatus: {
+        loading: false,
+        finished: false
+      },
+      destUser: null,
+      srcUser: null,
       inputPos: null,
       showEmoji: false,
-      messages: messageList,
+      messages: [],
+      pageInfo: {
+        page: 1,
+        size: 10
+      },
       message: {
         content: ''
-      }
+      },
+      enabled: true
     }
   },
   methods: {
+    // WebSocket
+    initWebSocket () {
+      this.connection()
+      const that = this
+      // 断开重连机制,尝试发送消息,捕获异常发生时重连
+      this.timer = setInterval(() => {
+        try {
+          that.stompClient.send('test')
+        } catch (err) {
+          console.log('断线了: ' + err)
+          that.connection()
+        }
+      }, 5000)
+    },
+
+    /**
+     * 连接后台ws
+     */
+    connection () {
+      var _this = this
+      // 建立连接对象
+      const socket = new SockJS('http://localhost:9420/meet/point')
+      // 获取STOMP子协议的客户端对象
+      this.stompClient = Stomp.over(socket)
+      this.stompClient.debug = null
+      // 定义客户端的认证信息,按需求配置
+      const headers = {
+        Authorization: ''
+      }
+      // 向服务器发起websocket连接
+      this.stompClient.connect(
+        headers,
+        function (res) {
+          // 连接成功 订阅系统信息主题消息
+          _this.stompClient.subscribe(`/user/${_this.srcUser.userId}:${_this.destUser.userId}/message`, function (msg) {
+            _this.enabled = true
+            _this.messages.push(JSON.parse(msg.body))
+          })
+        },
+        function (error) {
+          // 连接发生错误时的处理函数
+          console.log(error)
+        }
+      )
+    },
+
+    /**
+     * 发送消息
+     */
+    async onSendMessage () {
+      const res = await sendMessage({
+        srcId: this.srcUser.userId,
+        destId: this.destUser.userId,
+        content: this.message.content
+      })
+      if (res.code === 200) {
+        this.enabled = true
+        this.messages.push(res.result)
+        this.message.content = ''
+      }
+    },
+
+    async getMessages () {
+      const res = await getMessageList({
+        destId: this.destUser.userId,
+        ...this.pageInfo
+      })
+      if (res.code === 200) {
+        if (this.messages.length !== 0) {
+          this.enabled = false
+        }
+        const records = res.result.records
+        records.reverse()
+        this.messages.unshift(...records)
+        if (records.length < this.pageInfo.size) {
+          this.messageStatus.finished = true
+        }
+        this.messageStatus.loading = false
+        this.pageInfo.page = res.result.current + 1
+      }
+    },
     // 当输入框失去焦点时，获取输入框光标位置
     resetPos (e) {
       this.inputPos = e.srcElement.selectionStart
@@ -128,10 +228,29 @@ export default {
       this.message.content = input
       this.inputPos = pos
     },
-    sendMessage () {
-      this.message.content = ''
+    scrollToPosition () {
+      if (document.getElementsByClassName('latest-message')[0] === undefined) {
+        return
+      }
+      document.getElementsByClassName('latest-message')[0].scrollIntoView()
     }
-
+  },
+  watch: {
+    messages () {
+      this.$nextTick(function () {
+        if (this.enabled) {
+          this.scrollToPosition()
+        }
+      })
+    }
+  },
+  beforeDestroy () {
+    /**
+     * 断开连接
+     */
+    if (this.stompClient) {
+      this.stompClient.disconnect()
+    }
   }
 }
 </script>
@@ -167,10 +286,15 @@ export default {
 
 }
 .message-main {
-  height: 100%;
+  height: 712px;
   background-color: #f0f2f3;
+  .van-list{
+    overflow: auto;
+    height: 100%;
+  }
 }
 .message-box {
+  position: fixed;
   bottom: 0;
   left: 0;
   color: #AEB3B9;

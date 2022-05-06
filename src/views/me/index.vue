@@ -6,8 +6,9 @@
 
 <script>
 import MeIsLogin from '@/views/me/components/MeIsLogin'
-import { userList } from '@/data/UsersData'
 import Cookies from 'js-cookie'
+import { mapGetters, mapMutations } from 'vuex'
+import { getUserBase } from '@/api/user'
 export default {
   name: 'me',
   data () {
@@ -22,8 +23,21 @@ export default {
     this.checkToken()
   },
   methods: {
-    getMyInfo () {
-      this.user = userList[0]
+    ...mapGetters([
+      'getUserInfo'
+    ]),
+    ...mapMutations([
+      'setUserInfo'
+    ]),
+    async getMyInfo () {
+      const localUser = this.getUserInfo()
+      const res = await getUserBase(null)
+      if (res.code === 200) {
+        this.user = res.result
+        this.setUserInfo(this.user)
+      } else {
+        this.user = localUser
+      }
     },
     checkToken () {
       const token = Cookies.get('meet-token')

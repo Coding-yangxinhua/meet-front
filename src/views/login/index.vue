@@ -78,7 +78,7 @@ export default {
         case 200:
           this.$store.commit('setToken', res.data.token)
           this.$router.back()
-          Toast.success('登录成功')
+          Toast.success(res.message)
           break
       }
     },

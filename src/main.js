@@ -7,8 +7,10 @@ import Vant from 'vant'
 import 'vant/lib/index.css'
 import './styles/index.scss'
 import 'vant/lib/icon/local.css'
+import VueCookies from 'vue-cookies'
 
 Vue.use(Vant)
+Vue.use(VueCookies)
 
 Vue.config.productionTip = false
 

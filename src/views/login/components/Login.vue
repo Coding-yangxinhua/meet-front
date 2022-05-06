@@ -37,6 +37,9 @@
 
 <script>
 import { isMobile } from '@/utils/ValidateUtil'
+import { login } from '@/api/user'
+import { Toast } from 'vant'
+import { mapMutations } from 'vuex'
 
 export default {
   name: 'login',
@@ -74,7 +77,10 @@ export default {
   },
 
   methods: {
-    disposeLogin () {
+    ...mapMutations([
+      'setUserInfo'
+    ]),
+    async disposeLogin () {
       if (this.checkPass) {
         // 验证码登录
         if (this.status === 0) {
@@ -89,7 +95,23 @@ export default {
             }
           })
         } else {
-          // 验证密码是否正确
+          Toast.loading({
+            message: '登录中...',
+            duration: 5000,
+            forbidClick: true
+          })
+          // 账号密码登录
+          const res = await login(null, this.user)
+          Toast({
+            message: res.message,
+            duration: 1000
+          })
+          if (res.code === 200) {
+            this.setUserInfo(res.result)
+            this.$router.push('/home')
+          } else {
+            this.user.password = null
+          }
         }
       }
     }

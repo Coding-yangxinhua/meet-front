@@ -1,6 +1,6 @@
 <template>
   <div class="chat-single-container">
-    <van-swipe-cell class="swipe" :class="{'topStyle': chat.isTop}">
+    <van-swipe-cell class="swipe" :class="{'topStyle': chat.isTop != null && chat.isTop}">
       <van-row>
         <van-col span="4" class="chat-avatar">
           <van-image height="50"
@@ -15,7 +15,7 @@
                 {{ chat.user.nickname }}
               </van-row>
               <van-row class="chat-message hidden-line1">
-                {{ chat.upToDateMessage.content }}
+                {{ chat.content }}
               </van-row>
             </van-col>
             <van-col span="6">
@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import { articleDateStyle } from '../utils/DateFormatUtil'
+import { articleDateStyle } from '@u/DateFormatUtil'
 
 export default {
   name: 'chat-single',
@@ -56,7 +56,7 @@ export default {
   },
   computed: {
     getFormatTime () {
-      return articleDateStyle(this.chat.upToDateMessage.gmtCreate)
+      return articleDateStyle(this.chat.gmtModified)
     }
   },
   methods: {

@@ -9,5 +9,8 @@ export default {
 }
 </script>
 <style lang="scss">
-
+body html{
+  width: 375px;
+  height: 812px;
+}
 </style>

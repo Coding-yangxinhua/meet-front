@@ -72,7 +72,7 @@ export const simuChannelList = [
     channelId: 0,
     channelName: '热门'
   }, {
-    channelId: 1,
+    channelId: 2,
     channelName: '关注'
   }
 ]

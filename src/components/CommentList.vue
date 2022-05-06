@@ -21,7 +21,6 @@
       >
         <comment-single
           :comment="comment"
-          :show-reply-text="true"
           v-for="comment in comments"
           :key="comment.commentId"
         />
@@ -31,22 +30,32 @@
 </template>
 
 <script>
-import { orderList } from '../data/OrderTypeData'
+import { orderList } from '@/data/OrderTypeData'
 import CommentSingle from './CommentSingle'
-import { commentList } from '../data/CommentData'
+import { listCommentRoot } from '@/api/comment'
 
 export default {
   name: 'comment-list',
   components: { CommentSingle },
-  props: {
-  },
   computed: {
     getNowOrder () {
       return this.orders.filter(order => order.orderId === this.nowOrderId)
     }
   },
+  created () {
+    const articleView = this.$store.state.articleView
+    if (articleView === null) {
+      this.$router.back()
+    }
+    this.articleId = articleView.articleId
+  },
   data () {
     return {
+      articleId: null,
+      pageInfo: {
+        page: 1,
+        size: 10
+      },
       // 回复列表下拉加载
       replyLoadStatus: {
         isLoading: false,
@@ -72,7 +81,7 @@ export default {
       },
       nowOrderId: 0,
       orders: orderList,
-      comments: commentList
+      comments: []
     }
   },
   methods: {
@@ -82,13 +91,22 @@ export default {
       this.refreshStatus.successMsg = '刷新成功'
     },
     // 下拉加载更多
-    onLoad () {
-      // this.comments.push(...loadReply)
-      // this.loadStatus.isLoading = false
-      // if (this.comments.length > 15) {
-      //   this.loadStatus.finished = true
-      //   this.loadStatus.finishMsg = '已经到底了'
-      // }
+    async onLoad () {
+      const res = await listCommentRoot({
+        articleId: this.articleId,
+        order: this.nowOrderId,
+        ...this.pageInfo
+      })
+      if (res.code === 200) {
+        const data = res.result.records
+        if (data.length === 0) {
+          this.loadStatus.finished = true
+        }
+        this.comments.push(...data)
+      }
+      this.loadStatus.isLoading = false
+      this.loadStatus.finished = true
+      // this.loadStatus.finishMsg = res.message
     }
   }
 }

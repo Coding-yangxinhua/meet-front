@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import { userList } from '@/data/UsersData'
+import { updateProfile } from '@/api/user'
 export default {
   name: 'me-profile-nickname',
   created () {
@@ -30,9 +30,11 @@ export default {
     }
   },
   methods: {
-    modifyNickname () {
-      userList[0].nickname = this.user.nickname
-      this.$router.back()
+    async modifyNickname () {
+      await updateProfile({
+        nickname: this.user.nickname
+      })
+      this.$router.go(-1)
     }
   }
 }

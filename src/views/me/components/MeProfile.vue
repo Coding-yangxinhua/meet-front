@@ -10,12 +10,14 @@
           <template #right-icon>
             <van-uploader
               max-count="1"
+              :after-read="updateAvatar"
             >
               <div class="flex center">
                 <van-image
                   width="55"
                   height="55"
                   round
+                  fit="cover"
                   :src="user.avatar"/>
                 <van-icon class="van-cell__right-icon"  name="arrow" />
               </div>
@@ -36,7 +38,7 @@
         </van-popup>
       </van-cell-group>
       <van-cell-group>
-        <van-cell title="生日" is-link @click="birthProp.showBirthPicker=true" :value="user.birth"/>
+        <van-cell title="生日" is-link @click="birthProp.showBirthPicker=true" :value="birth"/>
         <van-popup v-model="birthProp.showBirthPicker" round position="bottom">
           <van-datetime-picker
             v-model="birthProp.currentDate"
@@ -67,9 +69,9 @@
 
 <script>
 import Vue from 'vue'
-import { Popup } from 'vant'
-import { userList } from '@/data/UsersData'
+import { Popup, Toast } from 'vant'
 import { normalDate } from '@/utils/DateFormatUtil'
+import { getUserInfo, updateAvatar, updateProfile } from '@/api/user'
 
 Vue.use(Popup)
 export default {
@@ -77,13 +79,13 @@ export default {
   computed: {
     gender () {
       return this.user.gender === 0 ? '男' : '女'
+    },
+    birth () {
+      return normalDate(this.user.birth)
     }
   },
   created () {
     this.getMyInfo()
-    if (this.user.birth != null) {
-      this.birthProp.currentDate = this.user.birth
-    }
   },
   data () {
     return {
@@ -117,20 +119,76 @@ export default {
       this.birthProp.showBirthPicker = false
       this.showGenderPicker = false
     },
-    updateUserIntro () {
-      console.log('update user intro')
+    async updateUserIntro () {
+      Toast.loading({
+        duration: 5000,
+        message: '保存中...'
+      })
+      const res = await updateProfile({
+        intro: this.user.intro
+      })
+      Toast({
+        message: res.message,
+        duration: 1000
+      })
     },
     async getMyInfo () {
-      this.user = userList[0]
+      const res = await getUserInfo()
+      if (res.code === 200) {
+        this.user = res.result
+        const birth = normalDate(this.user.birth)
+        this.birthProp.currentDate = new Date(birth)
+      }
     },
     // 生日
     async onConfirmBirth () {
+      Toast.loading({
+        duration: 5000,
+        message: '保存中...'
+      })
       this.birthProp.showBirthPicker = false
-      this.user.birth = normalDate(this.birthProp.currentDate.getTime())
+      const res = await updateProfile({
+        birth: this.birthProp.currentDate.getTime()
+      })
+      if (res.code === 200) {
+        this.user.birth = this.birthProp.currentDate.getTime()
+      }
+      Toast({
+        message: res.message,
+        duration: 1000
+      })
     },
     async onConfirmGender (value, index) {
       this.genderProp.showGenderPicker = false
-      this.user.gender = index
+      Toast.loading({
+        duration: 5000,
+        message: '保存中...'
+      })
+      this.birthProp.showBirthPicker = false
+      const res = await updateProfile({
+        gender: index
+      })
+      if (res.code === 200) {
+        this.user.gender = index
+      }
+      Toast({
+        message: res.message,
+        duration: 1000
+      })
+    },
+    async updateAvatar (file) {
+      Toast.loading({
+        duration: 5000,
+        message: '保存中...'
+      })
+      const res = await updateAvatar(file)
+      if (res.code === 200) {
+        this.$router.go(0)
+      }
+      Toast({
+        message: res.message,
+        duration: 1000
+      })
     }
   }
 

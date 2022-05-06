@@ -26,18 +26,15 @@
 
 <script>
 
-import { simuArticleList, simuLoadArticleList, simuRefreshArticleList } from '@/data/ArticlesData'
-import ArticleSingle from '@/components/ArticleSingle'
+import ArticleSingle from '@c/ArticleSingle'
 import Vue from 'vue'
 import { Popup } from 'vant'
+import { getArticlesByType, refreshArticles } from '@/api/article'
 Vue.use(Popup)
 export default {
-  name: 'article-list',
+  name: 'home-article-list',
   components: {
     ArticleSingle
-  },
-  created () {
-    this.initArticleList()
   },
 
   props: {
@@ -53,6 +50,10 @@ export default {
         dislikeArticleId: null
       },
       articleList: [],
+      pageInfo: {
+        page: 1,
+        size: 10
+      },
       loadStatus: {
         isLoading: false,
         finished: false,
@@ -77,25 +78,38 @@ export default {
       this.dislike.dislikePopShowing = false
       this.dislike.dislikeArticleId = null
     },
-    // 初始化文章数据
-    async initArticleList () {
-      this.articleList = simuArticleList
-    },
     // 上拉刷新
     async onRefresh () {
-      this.articleList.unshift(...simuRefreshArticleList)
-      console.log(this.articleList)
+      const length = this.articleList.length
+      const id = length > 0 ? this.articleList[0].articleId : null
+      const res = await refreshArticles({
+        articleId: id,
+        type: this.channel.channelId,
+        ...this.pageInfo
+      })
+      this.articleList.unshift(...res.result.records)
       this.refreshStatus.isRefreshing = false
-      this.refreshStatus.successMsg = '刷新成功'
+      this.refreshStatus.successMsg = res.message
     },
     // 下拉加载更多
-    onLoad () {
-      this.articleList = this.articleList.concat(...simuLoadArticleList)
-      this.loadStatus.isLoading = false
-      if (this.articleList.length > 15) {
-        this.loadStatus.finished = true
-        this.loadStatus.finishMsg = '已经到底了'
+    async onLoad () {
+      const length = this.articleList.length
+      const articleId = length > 0 ? this.articleList[length - 1].articleId : null
+      const res = await getArticlesByType({
+        type: this.channel.channelId,
+        articleId,
+        ...this.pageInfo
+      })
+      if (res.code === 200) {
+        const data = res.result.records
+        if (data.length === 0) {
+          this.loadStatus.finished = true
+        }
+        this.articleList.push(...res.result.records)
       }
+      this.loadStatus.isLoading = false
+      this.loadStatus.finished = true
+      // this.loadStatus.finishMsg = res.message
     }
   }
 }

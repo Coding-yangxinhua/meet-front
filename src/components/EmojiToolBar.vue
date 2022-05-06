@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import { emojiList, emojiProp } from '../data/EmojiJson'
+import { emojiList, emojiProp } from '@/data/EmojiJson'
 
 export default {
   name: 'emoji-tool-bar',
