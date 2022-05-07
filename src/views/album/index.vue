@@ -8,7 +8,7 @@
           <div>新建相册</div>
         </div>
       </van-col>
-      <van-col class="albums-col" v-for="album in albums" :key="album.albumId" @click="toAlbumDetail(album.albumId, album.title)">
+      <van-col class="albums-col" v-for="album in albums"  :key="album.albumId" @click="toAlbumDetail(album.albumId, album.title)">
         <album-single :photo-album="album"></album-single>
       </van-col>
     </van-row>
@@ -53,6 +53,7 @@ export default {
     },
     // 去相册详情
     toAlbumDetail (albumId, title) {
+      console.log('去详情')
       this.setAlbumView({
         albumId,
         title,

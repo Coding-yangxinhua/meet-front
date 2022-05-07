@@ -3,7 +3,7 @@
     <lazy-component>
       <!--  头部信息：头像、发布信息、姓名-->
       <van-row class="header" >
-        <van-col span="4" class="user-head flex center" @click.s.stop="toOtherHome">
+        <van-col span="4" class="user-head flex center" @click.stop="toOtherHome">
           <van-image round fit="cover" :src="article.userBase.avatar"/>
         </van-col>
         <van-col span="12" class="msg-info">
@@ -123,6 +123,9 @@ export default {
     },
     isFollow () {
       const user = this.article.userBase
+      if (this.selfInfo === null) {
+        return false
+      }
       return user.relation > 0 || user.userId === this.selfInfo.userId
     },
     formatDate () {
@@ -144,15 +147,14 @@ export default {
   },
   methods: {
     ...mapMutations([
-      'setArticleView'
+      'setArticleView',
+      'setOtherView'
     ]),
     async toOtherHome () {
-      this.$router.push({
-        name: 'other',
-        params: {
-          queryId: this.article.userBase.userId
-        }
+      this.setOtherView({
+        userId: this.article.userBase.userId
       })
+      this.$router.push('other')
     },
     // 点赞文章
     async changeLikeStatus () {

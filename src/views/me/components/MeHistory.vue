@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="history-article">
     <history-article-list></history-article-list>
   </div>
 </template>
@@ -13,5 +13,13 @@ export default {
 </script>
 
 <style scoped>
-
+.article-list {
+  background-color: #EEEEEE;
+  position: fixed;
+  left: 0;
+  right: 0;
+  overflow-y: auto;
+  bottom: 50px;
+  top: 350px;
+}
 </style>
