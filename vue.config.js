@@ -7,13 +7,8 @@ module.exports = {
   // 关闭eslint语法检测功能
   // lintOnSave: false,
   // 开发服务器相关的配置
-  // devServer: {
-  // 配置静态资源目录
-  // contentBase: path.join(__dirname, 'public'),
-  // 设置开发服务器端口号
-  // port: 8080
-  // },
   devServer: {
+    port: 1314,
     proxy: {
       '/api': {
         target: 'http://localhost:9420', // 接口地址
