@@ -8,7 +8,7 @@ module.exports = {
   // lintOnSave: false,
   // 开发服务器相关的配置
   devServer: {
-    port: 1314,
+    port: 8080,
     proxy: {
       '/api': {
         target: 'http://162.14.101.164:9420', // 接口地址

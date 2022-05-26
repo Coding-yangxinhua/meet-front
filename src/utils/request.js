@@ -2,8 +2,8 @@ import axios from 'axios'
 
 const request = axios.create({
   // 根据环境变量区分接口的默认地址
-  // baseURL: 'http://162.14.101.164:9420/meet',
-  baseURL: 'http://162.14.101.164/meet/api',
+  // baseURL: 'http://localhost:9420/meet',
+  baseURL: 'http://metju.cn/meet/api',
   // 设置超时时间和跨域是否允许携带凭证
   timeout: 10000,
   withCredentials: true

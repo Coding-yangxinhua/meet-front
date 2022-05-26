@@ -11,6 +11,11 @@ const routes = [
     children: [
       // 首页
       {
+        path: '/',
+        component: () => import('@v/home/')
+      },
+      // 首页
+      {
         path: '/home',
         component: () => import('@v/home/')
       },
