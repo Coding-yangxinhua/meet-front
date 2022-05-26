@@ -43,7 +43,7 @@ export const timeToDateObj = timestamp => {
   return {
     year: date.getFullYear(),
     month: (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1),
-    day: date.getDate() + 1 < 10 ? '0' + (date.getDate() + 1) : date.getDate() + 1,
+    day: date.getDate() + 1 < 10 ? '0' + (date.getDate()) : date.getDate(),
     hour: date.getHours(),
     minute: date.getMinutes(),
     second: date.getSeconds()

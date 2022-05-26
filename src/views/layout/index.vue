@@ -42,6 +42,7 @@ export default {
       'getToken'
     ]),
     setActive (pos, needLogin) {
+      console.log(pos)
       if (needLogin) {
         const token = this.getToken()
         if (token != null) {

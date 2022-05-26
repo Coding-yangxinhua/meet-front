@@ -120,6 +120,7 @@ export default {
         this.$router.go(-1)
         this.resetArticle()
       }
+      console.log(res)
       Toast({
         message: res.message
       })

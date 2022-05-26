@@ -13,7 +13,7 @@ Vue.use(Vant)
 Vue.use(VueCookies)
 
 Vue.config.productionTip = false
-
+console.log(process.env.NODE_BASE_URL)
 new Vue({
   router,
   store,
