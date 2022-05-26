@@ -11,7 +11,7 @@ module.exports = {
     port: 1314,
     proxy: {
       '/api': {
-        target: 'http://localhost:9420', // 接口地址
+        target: 'http://162.14.101.164:9420', // 接口地址
         ws: true, // 是否启用websockets
         changOrigin: true, // 允许跨域  Origin源127.0.0.1:9000
         pathRewrite: {
