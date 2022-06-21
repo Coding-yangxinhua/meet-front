@@ -36,7 +36,6 @@ export default {
   components: {
     ArticleSingle
   },
-
   props: {
     channel: {
       required: true,
@@ -84,7 +83,7 @@ export default {
       const id = length > 0 ? this.articleList[0].articleId : null
       const res = await refreshArticles({
         articleId: id,
-        type: this.channel.channelId,
+        type: this.channel.itemValue,
         ...this.pageInfo
       })
       this.articleList.unshift(...res.result.records)
@@ -93,10 +92,13 @@ export default {
     },
     // 下拉加载更多
     async onLoad () {
+      if (this.channel == null) {
+        return
+      }
       const length = this.articleList.length
       const articleId = length > 0 ? this.articleList[length - 1].articleId : null
       const res = await getArticlesByType({
-        type: this.channel.channelId,
+        type: this.channel.itemValue,
         articleId,
         ...this.pageInfo
       })
@@ -120,10 +122,6 @@ export default {
 .van-pull-refresh {
   overflow-y: scroll;
   height: 100%;
-}
-.van-list {
-  /*height: 100%;*/
-  /*overflow-y: scroll;*/
 }
 .article-list {
   background-color: #EEEEEE;

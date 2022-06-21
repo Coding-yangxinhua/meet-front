@@ -21,3 +21,16 @@ export const setItem = (name, value) => {
 export const removeItem = name => {
   window.localStorage.removeItem(name)
 }
+
+export const getItemOrDefault = (name, value) => {
+  const data = window.localStorage.getItem(name)
+  try {
+    const jsonData = JSON.parse(data)
+    if (jsonData == null) {
+      return value
+    }
+    return jsonData
+  } catch (err) {
+    return data
+  }
+}

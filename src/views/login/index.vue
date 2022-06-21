@@ -91,11 +91,8 @@ export default {
       })
       const res = await login(this.user)
       // 处理返回值
-      switch (res.code) {
-        case 200:
-          this.$router.back()
-          Toast.success('注册成功')
-          break
+      if (res.code === 200) {
+        this.$router.back()
       }
     },
     // 发送验证码
@@ -117,6 +114,7 @@ export default {
     // 页面回退
     goBack () {
       this.position.pop()
+      console.log(this.position.length)
       if (this.position.length <= 0) {
         this.$router.back()
       }

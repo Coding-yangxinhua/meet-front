@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { setItem, getItem } from '@/utils/storage'
+import { setItem, getItem, getItemOrDefault } from '@/utils/storage'
 import { getCookie, removeCookie } from '@u/CookieUtil'
 
 Vue.use(Vuex)
@@ -10,33 +10,57 @@ const USER_INFO = 'userInfo'
 const ALBUM_VIEW = 'album-view'
 const ARTICLE_VIEW = 'article-view'
 const OTHER_VIEW = 'other-view'
+const SELECTED_LIMIT = 'select-limit'
 export default new Vuex.Store({
   state: {
+    // 底部导航栏位置记录
     position: 0,
+    // 当前请求状态
+    result: null,
+    // 成功后是否全局提示
+    showSuccessToast: false,
     token: getCookie(TOKEN_KEY),
     userInfo: getItem(USER_INFO),
     albumView: getItem(ALBUM_VIEW),
     articleView: getItem(ARTICLE_VIEW),
     otherView: getItem(OTHER_VIEW),
-    localAlbum: {
-      title: '',
-      limitId: 0
-    },
     localArticle: {
       content: '',
       limitId: 0
     },
-    limits: null
+    limits: null,
+    selectedLimit: getItemOrDefault(SELECTED_LIMIT, {
+      dictId: 2,
+      itemValue: 0,
+      itemLabel: '公开'
+    })
   },
   mutations: {
     setPosition (state, pos) {
       state.position = pos
     },
-    setAlbum (state, album) {
-      state.tempAlbum = album
+    setResult (state, result) {
+      if (result == null) {
+        return
+      }
+      state.result = {
+        code: result.code,
+        message: result.message
+      }
     },
-
-    setArticle (state, article) {
+    setSuccessToast (state, show) {
+      state.showSuccessToast = show
+    },
+    setLoadingToast (state, message) {
+      state.result = {
+        code: null,
+        message: message
+      }
+    },
+    setSelectedLimit (state, limit) {
+      state.selectedLimit = limit
+    },
+    setLocalArticle (state, article) {
       state.localArticle = article
     },
     setLimits (state, limits) {
@@ -54,18 +78,6 @@ export default new Vuex.Store({
       state.otherView = otherView
       setItem(OTHER_VIEW, otherView)
     },
-    resetArticle (state) {
-      state.localArticle = {
-        content: '',
-        limitId: 0
-      }
-    },
-    resetAlbum (state) {
-      state.localAlbum = {
-        title: '',
-        limitId: 0
-      }
-    },
     // 移除cookies中token
     removeToken (state) {
       state.token = null
@@ -73,9 +85,11 @@ export default new Vuex.Store({
     },
     // 存储user信息
     setUserInfo (state, userInfo) {
+      state.token = getCookie(TOKEN_KEY)
       state.userInfo = userInfo
       setItem(USER_INFO, userInfo)
     },
+
     removeUser (state) {
       state.userInfo = null
       setItem(USER_INFO, null)
@@ -84,6 +98,18 @@ export default new Vuex.Store({
     }
   },
   getters: {
+    isLogin (state) {
+      return state.token != null && state.token !== ''
+    },
+    getPosition (state) {
+      return state.position
+    },
+    getResult (state) {
+      return state.result
+    },
+    getSuccessToast (state) {
+      return state.showSuccessToast
+    },
     getArticleView (state) {
       return state.articleView
     },
@@ -93,9 +119,7 @@ export default new Vuex.Store({
     getLocalArticle (state) {
       return state.localArticle
     },
-    getPosition (state) {
-      return state.position
-    },
+
     getUserInfo (state) {
       return state.userInfo
     },

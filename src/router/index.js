@@ -23,7 +23,7 @@ const routes = [
       {
         path: '/wish',
         name: 'wish',
-        component: () => import('@v/wish/')
+        component: () => import('@v/test/')
       },
       // 我的 -- 包括我的主页、动态、浏览记录
       {
@@ -85,12 +85,12 @@ const routes = [
   {
     path: '/album/create',
     name: 'album-create',
-    component: () => import('@c/AlbumCreate')
+    component: () => import('@v/album/components/AlbumCreate')
   },
   {
-    path: '/album/limit',
-    name: 'album-limit',
-    component: () => import('@c/AlbumLimitSelect')
+    path: '/limit',
+    name: 'limit',
+    component: () => import('@c/LimitSelect')
   },
   {
     path: '/album/photo/upload',
@@ -108,12 +108,6 @@ const routes = [
     path: '/article/write',
     name: 'article-write',
     component: () => import('@/components/ArticleWrite')
-  },
-  // 文章权限
-  {
-    path: '/article/limit',
-    name: 'article-limit',
-    component: () => import('@c/ArticleLimitSelect')
   },
   // 私信页面
   {

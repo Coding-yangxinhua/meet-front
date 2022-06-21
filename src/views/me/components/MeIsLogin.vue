@@ -8,12 +8,10 @@
       <van-row class="base-info">
         <!--  用户头像  -->
         <van-col span="8" class="flex j-center avatar">
-          <van-image
+          <own-image
             class="user-avatar"
-            round
-            fit="cover"
             :src="user.avatar"
-          />
+          ></own-image>
         </van-col>
         <!--  用户基础信息  -->
         <van-col span="16">
@@ -68,13 +66,15 @@
 import meHome from '@/views/me/components/MeHome'
 import meArticle from '@/views/me/components/MeArticle'
 import meHistory from '@/views/me/components/MeHistory'
+import ownImage from '@c/OwnImage'
 
 export default {
   name: 'me-is-login',
   components: {
     meHome,
     meArticle,
-    meHistory
+    meHistory,
+    ownImage
   },
   created () {
   },

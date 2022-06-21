@@ -90,7 +90,7 @@ export default {
       tempInput = tempInput.slice(0, this.pos - preElementLength) + tempInput.slice(this.pos)
       // 改变指向位置
       tempPos -= preElementLength
-      this.$emit('deleteEmoji', tempInput, tempPos)
+      this.changeInputAndPos(tempInput, tempPos)
     },
     // 添加表情
     selectEmojiChild (index, height, width) {
@@ -99,7 +99,11 @@ export default {
       let tempPos = this.pos !== null ? this.pos : 0
       tempInput = tempInput.slice(0, tempPos) + value + tempInput.slice(tempPos, tempInput.length)
       tempPos += value.length
-      this.$emit('selectEmoji', tempInput, tempPos)
+      this.changeInputAndPos(tempInput, tempPos)
+    },
+    changeInputAndPos (input, pos) {
+      this.$emit('update:input', input)
+      this.$emit('update:pos', pos)
     }
   }
 }

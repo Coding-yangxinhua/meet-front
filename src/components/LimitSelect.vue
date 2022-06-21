@@ -1,19 +1,19 @@
 <template>
-  <div class="albumPrivateContainer">
+  <div class="limitContainer">
     <van-nav-bar left-arrow
                  class="normal-nav"
                  title="谁能看见"
                  right-text="完成"
                  @click-left="$router.back()"
                  @click-right="changePrivate"></van-nav-bar>
-    <van-radio-group v-model="article.limitId">
+    <van-radio-group v-model="selectedLimit.limitId">
       <van-cell-group>
         <van-cell class="private-cell" v-for="limit in limits" :key="limit.dictId"
                   :title="limit.itemLabel"
                   clickable
-                  @click="setPrivateLevel(limit.itemValue)">
+                  @click="setPrivateLevel(limit.dictId)">
           <template #right-icon>
-            <van-icon class="private-select" name="success" v-show="limit.itemValue === article.limitId" />
+            <van-icon class="private-select" name="success" v-show="limit.dictId === selectedLimit.dictId" />
           </template>
         </van-cell>
       </van-cell-group>
@@ -26,9 +26,10 @@ import { mapMutations } from 'vuex'
 import { getItemsByType, ItemType } from '@/api/DictItem'
 
 export default {
-  name: 'article-limit-select',
+  name: 'limit-select',
   created () {
     this.limits = this.$store.state.limits
+    this.selectedLimit = this.$store.state.selectedLimit
     if (this.limits === null) {
       this.getLimit()
     }
@@ -36,12 +37,12 @@ export default {
   data () {
     return {
       limits: null,
-      article: this.$store.state.localArticle
+      selectedLimit: null
     }
   },
   methods: {
     ...mapMutations([
-      'setArticle',
+      'setSelectedLimit',
       'setLimits'
     ]),
     async getLimit () {
@@ -51,11 +52,12 @@ export default {
         this.setLimits(this.limits)
       }
     },
-    setPrivateLevel (limitId) {
-      this.article.limitId = limitId
+    setPrivateLevel (dictId) {
+      this.selectedLimit = this.limits.filter(limit => limit.dictId === dictId)[0]
     },
     changePrivate () {
-      this.setArticle(this.article)
+      this.setSelectedLimit(this.selectedLimit)
+      // this.setArticle(this.article)
       this.$router.go(-1)
     }
   }

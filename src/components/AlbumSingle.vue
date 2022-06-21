@@ -23,16 +23,10 @@
 <script>
 import { Lazyload } from 'vant'
 import Vue from 'vue'
-import { getDictLabelById } from '@u/OwnUtil'
 
 Vue.use(Lazyload)
 export default {
   name: 'album-single',
-  computed: {
-    getDictLabel () {
-      return getDictLabelById(this.photoAlbum.limitId, this.limits)
-    }
-  },
   props: {
     photoAlbum: {
       require: true

@@ -1,6 +1,6 @@
 <template>
   <div class="album-container">
-    <van-nav-bar title="相册" left-arrow @click-left="$router.back()" />
+    <van-nav-bar title="相册" left-arrow @click-left="saveBeforeBack()" />
     <van-row class="albums-row" type="flex" justify="space-between">
       <van-col class="albums-col" @click="toCreateAlbum" v-if="userId == null">
         <div class="create-album flex">
@@ -37,7 +37,7 @@ export default {
   },
   methods: {
     ...mapMutations([
-      'resetAlbum',
+      'setAlbum',
       'setAlbumView'
     ]),
     async getAlbumListByUid () {
@@ -48,12 +48,10 @@ export default {
     },
     // 创建相册
     toCreateAlbum () {
-      this.resetAlbum()
       this.$router.push('/album/create')
     },
     // 去相册详情
     toAlbumDetail (albumId, title) {
-      console.log('去详情')
       this.setAlbumView({
         albumId,
         title,

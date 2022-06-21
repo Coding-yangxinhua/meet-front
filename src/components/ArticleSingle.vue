@@ -4,34 +4,35 @@
       <!--  头部信息：头像、发布信息、姓名-->
       <van-row class="header" >
         <van-col span="4" class="user-head flex center" @click.stop="toOtherHome">
-          <van-image round fit="cover" :src="article.userBase.avatar"/>
+          <van-image round fit="cover" :src="article.user.avatar"/>
         </van-col>
         <van-col span="12" class="msg-info">
-          <div class="user-name">{{ article.userBase.nickname }}</div>
+          <div class="user-name">{{ article.user.nickname }}</div>
           <div class="date" >{{ formatDate }}</div>
         </van-col>
         <van-col span="7" class="extra flex">
           <div v-if="!isFollow" class="not_like flex" >
-            <van-button round class="like_btn" @click.stop="followThisUser(article.userBase.userId)">+ 关注</van-button>
+            <van-button round class="like_btn" @click.stop="followThisUser(article.user.userId)">+ 关注</van-button>
           </div>
         </van-col>
         <van-col span="1" class="extra_btn">
-          <van-icon v-if="!article.userBase.isLike" @click="dislikeArticle" name="cross" />
+          <van-icon v-if="!article.user.isLike" @click="dislikeArticle" name="cross" />
           <van-icon v-else name="arrow-down" @click.stop="morePopShowing = true" />
         </van-col>
       </van-row>
       <!--  内容主体：文章及配图  -->
-      <van-row class="content" @click.stop="toArticleDetail">
+      <van-row class="content" @click.prevent="toArticleDetail">
         <van-row class="text">{{ article.content }}</van-row>
         <van-row class="image" gutter="5">
-          <van-col @click.stop="showImagePreview(article.picList, index)" v-for="(image, index) in article.picList" :key="index">
-            <van-image
-              width="110"
-              height="110"
-              fit="cover"
-              lazy-load
-              :src="image"
-            />
+          <van-col  v-for="(image, index) in article.picList" :key="index">
+              <van-image
+                @click.stop="onShowImagePreview(index)"
+                width="110"
+                height="110"
+                fit="cover"
+                lazy-load
+                :src="image"
+              />
           </van-col>
         </van-row>
       </van-row>
@@ -75,19 +76,25 @@
         :show-emoji="commentWriteStatus.isShowEmoji">
       </comment-reply-box>
     </van-popup>
+    <own-image-preview v-if="article.picList != null"
+                       :showImagePreview.sync="showImagePreview"
+                       :images="article.picList"
+                       :pos.sync="pos">
+    </own-image-preview>
   </div>
 </template>
 
 <script>
 import Vue from 'vue'
 import { articleDateStyle } from '@/utils/DateFormatUtil'
-import { ImagePreview, Lazyload, Toast } from 'vant'
+import { Lazyload, Toast } from 'vant'
 import { changeStatus } from '@/api/userRelation'
 import { Relations } from '@/data/UserRelation'
 import { statusChange } from '@u/OwnUtil'
 import { changeArticleStatus } from '@/api/article'
 import { mapMutations } from 'vuex'
 import CommentReplyBox from '@c/CommentReplyBox'
+import OwnImagePreview from '@c/OwnImagePreview'
 
 Vue.use(Lazyload, {
   lazyComponent: true
@@ -95,8 +102,31 @@ Vue.use(Lazyload, {
 export default {
   name: 'article-single',
   components: {
-    CommentReplyBox,
-    [ImagePreview.Component.name]: ImagePreview.Component
+    OwnImagePreview,
+    CommentReplyBox
+  },
+
+  computed: {
+    isLike () {
+      const articleStatus = this.article.articleStatus
+      if (articleStatus === null) {
+        return false
+      }
+      return articleStatus.likeStatus !== null && articleStatus.likeStatus === 1
+    },
+    isFollow () {
+      const user = this.article.user
+      if (this.selfInfo === null) {
+        return false
+      }
+      return user.relation > 0 || user.userId === this.selfInfo.userId
+    },
+    formatDate () {
+      return articleDateStyle(this.article.gmtCreate)
+    },
+    selfInfo () {
+      return this.$store.state.userInfo
+    }
   },
   props: {
     showReplyPane: {
@@ -113,30 +143,10 @@ export default {
       require: true
     }
   },
-  computed: {
-    isLike () {
-      const articleStatus = this.article.articleStatus
-      if (articleStatus === null) {
-        return false
-      }
-      return articleStatus.likeStatus !== null && articleStatus.likeStatus === 1
-    },
-    isFollow () {
-      const user = this.article.userBase
-      if (this.selfInfo === null) {
-        return false
-      }
-      return user.relation > 0 || user.userId === this.selfInfo.userId
-    },
-    formatDate () {
-      return articleDateStyle(this.article.gmtCreate)
-    },
-    selfInfo () {
-      return this.$store.state.userInfo
-    }
-  },
   data () {
     return {
+      showImagePreview: false,
+      pos: 0,
       morePopShowing: false,
       commentWriteStatus: {
         isShowingWrite: false,
@@ -152,7 +162,7 @@ export default {
     ]),
     async toOtherHome () {
       this.setOtherView({
-        userId: this.article.userBase.userId
+        userId: this.article.user.userId
       })
       this.$router.push('other')
     },
@@ -172,8 +182,8 @@ export default {
       const res = await changeArticleStatus(articleStatus)
       if (res.code === 200) {
         const count = articleStatus.likeStatus === 0 ? -1 : 1
-        this.article.articleStatus.likeStatus = articleStatus.likeStatus
         this.article.likeSum += count
+        this.article.articleStatus.likeStatus = articleStatus.likeStatus
       }
     },
     // 收藏文章
@@ -188,12 +198,13 @@ export default {
     async followThisUser (userId) {
       const res = await changeStatus(userId, Relations.FOLLOW)
       if (res.code === 200) {
-        this.article.userBase.relation = Relations.FOLLOW
+        console.log(res)
+        this.article.user.relation = Relations.FOLLOW
+        Toast({
+          duration: 1000,
+          message: res.message
+        })
       }
-      Toast({
-        duration: 1000,
-        message: res.message
-      })
     },
     uploadComment () {
       this.commentWriteStatus.isShowingWrite = false
@@ -215,12 +226,10 @@ export default {
     dislikeArticle () {
       this.$emit('dislikeArticle', this.article.articleId)
     },
-    // 展示文章图片
-    showImagePreview (images, startPosition) {
-      ImagePreview({
-        images,
-        startPosition
-      })
+    // 展示预览图片
+    onShowImagePreview (index) {
+      this.showImagePreview = true
+      this.pos = index
     }
   }
 }

@@ -59,6 +59,7 @@
           <van-field
             class="input-box"
             v-model="message.content"
+            @blur="resetPos"
             center
             :autosize="{maxHeight: 120}"
             maxlength="600"
@@ -82,10 +83,8 @@
       </div>
       <emoji-tool-bar
         :show-emoji-box="showEmoji"
-        @selectEmoji="selectEmoji"
-        @deleteEmoji="deleteEmoji"
-        :pos="inputPos"
-        :input="message.content"
+        :pos.sync="inputPos"
+        :input.sync="message.content"
       ></emoji-tool-bar>
     </van-row>
   </div>
@@ -108,8 +107,6 @@ export default {
       this.$router.back()
     }
     this.initWebSocket()
-  },
-  computed: {
   },
   data () {
     return {
@@ -153,8 +150,9 @@ export default {
      */
     connection () {
       var _this = this
+      const apiUrl = process.env.VUE_APP_BASE_URL
       // 建立连接对象
-      const socket = new SockJS('http://localhost:9420/meet/point')
+      const socket = new SockJS(`${apiUrl}/point`)
       // 获取STOMP子协议的客户端对象
       this.stompClient = Stomp.over(socket)
       this.stompClient.debug = null
@@ -217,16 +215,6 @@ export default {
     // 当输入框失去焦点时，获取输入框光标位置
     resetPos (e) {
       this.inputPos = e.srcElement.selectionStart
-    },
-    // 选择表情
-    selectEmoji (input, pos) {
-      this.message.content = input
-      this.inputPos = pos
-    },
-    // 删除表情
-    deleteEmoji (input, pos) {
-      this.message.content = input
-      this.inputPos = pos
     },
     scrollToPosition () {
       if (document.getElementsByClassName('latest-message')[0] === undefined) {

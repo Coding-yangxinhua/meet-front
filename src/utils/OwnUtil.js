@@ -8,16 +8,14 @@ export const statusChange = value => {
   return change
 }
 
-export const getDictLabelById = (itemValue, dictItems) => {
-  if (dictItems == null) {
-    return ''
-  }
-  const dictItem = dictItems.filter(dictItem => {
-    return dictItem.itemValue === itemValue
-  })[0]
-  if (dictItem != null) {
-    return dictItem.itemLabel
-  } else {
-    return dictItems[0].itemLabel
+export const getPosition = () => {
+  const href = window.location.href
+  const current = href.split('#')[1]
+  if (current.includes('home')) {
+    return 0
+  } else if (current.includes('wish')) {
+    return 1
+  } else if (current.includes('me')) {
+    return 2
   }
 }

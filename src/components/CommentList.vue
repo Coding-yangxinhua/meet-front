@@ -106,7 +106,6 @@ export default {
       }
       this.loadStatus.isLoading = false
       this.loadStatus.finished = true
-      // this.loadStatus.finishMsg = res.message
     }
   }
 }

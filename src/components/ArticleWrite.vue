@@ -3,7 +3,7 @@
     <van-nav-bar
       title="动态"
       left-arrow
-      @click-left="$router.back()"
+      @click-left="saveBeforeBack()"
     >
       <template #right>
         <van-button :disabled="isNone"
@@ -30,9 +30,9 @@
         <van-col span="4" class="emojiBar" @click="showEmojiBox = !showEmojiBox">
           <van-icon name="smile"/>
         </van-col>
-        <van-col span="20" class="limit-pane" @click="$router.push('/article/limit')">
+        <van-col span="20" class="limit-pane" @click="$router.push('/limit')">
           <van-col class="limit-text">
-            {{ getDictLabel }}
+            {{ selectedLimit.itemLabel }}
           </van-col>
           <van-col class="limit-arrow">
             <van-icon class="arrow" name="arrow" />
@@ -41,12 +41,17 @@
       </van-row>
     </div>
     <emoji-tool-bar :showEmojiBox="this.showEmojiBox"
-                    @selectEmoji="selectEmoji"
-                    @deleteEmoji="deleteEmoji"
-                    :pos="inputPos"
-                    :input="article.content"
+                    :pos.sync="inputPos"
+                    :input.sync="article.content"
     >
     </emoji-tool-bar>
+    <van-action-sheet
+      v-model="showSheet"
+      :actions="actions"
+      @select="selectSheet"
+      cancel-text="取消"
+      close-on-click-action
+    />
   </div>
 </template>
 
@@ -54,60 +59,42 @@
 import EmojiToolBar from '@/components/EmojiToolBar'
 import { createArticle } from '@/api/article'
 import { Toast } from 'vant'
-import { getItemsByType, ItemType } from '@/api/DictItem'
 import { mapMutations } from 'vuex'
-import { getDictLabelById } from '@u/OwnUtil'
 export default {
   name: 'article-write',
   components: { EmojiToolBar },
   computed: {
     isNone () {
       return this.article.content === '' && this.picList.length === 0
-    },
-    getDictLabel () {
-      return getDictLabelById(this.article.limitId, this.limits)
     }
   },
   created () {
-    this.limits = this.$store.state.limits
-    if (this.limits === null) {
-      this.getLimit()
-    }
+    this.selectedLimit = this.$store.state.selectedLimit
+    const localArticle = this.$store.state.localArticle
+    this.picList = localArticle.picList == null ? [] : localArticle.picList
+    this.article = localArticle.article == null ? { content: '' } : localArticle.article
   },
   data () {
     return {
       showEmojiBox: false,
       inputPos: 0,
-      article: this.$store.state.localArticle,
-      limits: null,
-      picList: []
+      article: {
+        content: ''
+      },
+      selectedLimit: null,
+      picList: [],
+      showSheet: false,
+      actions: [{ name: '保存', func: this.save }, { name: '不保存', color: '#ee0a24', func: this.back }]
     }
   },
   methods: {
     ...mapMutations([
       'setLimits',
-      'resetArticle'
+      'setLocalArticle'
     ]),
     // 当输入框失去焦点时，获取输入框光标位置
     resetPos (e) {
       this.inputPos = e.srcElement.selectionStart
-    },
-    // 选择表情
-    selectEmoji (input, pos) {
-      this.article.content = input
-      this.inputPos = pos
-    },
-    // 删除表情
-    deleteEmoji (input, pos) {
-      this.article.content = input
-      this.inputPos = pos
-    },
-    async getLimit () {
-      const res = await getItemsByType(ItemType.LIMIT)
-      if (res.code === 200) {
-        this.limits = res.result
-        this.setLimits(this.limits)
-      }
     },
     async uploadArticle () {
       Toast.loading({
@@ -118,12 +105,35 @@ export default {
       const res = await createArticle(this.article, this.picList)
       if (res.code === 200) {
         this.$router.go(-1)
-        this.resetArticle()
+        this.setLocalArticle(null)
       }
-      console.log(res)
       Toast({
         message: res.message
       })
+    },
+    // 选择动作面板
+    selectSheet (e) {
+      e.func.apply()
+    },
+    // 保存
+    save () {
+      this.setLocalArticle({
+        article: this.article,
+        picList: this.picList
+      })
+      this.$router.go(-1)
+    },
+    back () {
+      this.setLocalArticle({})
+      this.$router.go(-1)
+    },
+    // 退出时弹出提示框
+    saveBeforeBack () {
+      console.log(this.article.content)
+      this.showSheet = (this.article.content != null && this.article.content !== '') || this.picList.length !== 0
+      if (!this.showSheet) {
+        this.$router.go(-1)
+      }
     }
   }
 }

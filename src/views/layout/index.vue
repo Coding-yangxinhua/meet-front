@@ -7,9 +7,8 @@
       <van-tabbar-item v-for="nav in navs"
                        :key="nav.navId"
                        class="tab-text"
-                       :to="nav.path"
                        icon-prefix="iconfont icon"
-                       @click="setActive(nav.navId, nav.needLogin)"
+                       @click="setActive(nav)"
                        :icon="getPosition===nav.navId? nav.active:nav.inactive">
         {{ nav.title }}
       </van-tabbar-item>
@@ -20,6 +19,7 @@
 <script>
 import { navList } from '@/data/navData'
 import { mapGetters, mapMutations } from 'vuex'
+import * as RouterUtil from '@u/RouterUtil'
 
 export default {
   name: 'index',
@@ -39,17 +39,20 @@ export default {
       'setPosition'
     ]),
     ...mapGetters([
-      'getToken'
+      'isLogin'
     ]),
-    setActive (pos, needLogin) {
-      console.log(pos)
+    setActive (nav) {
+      const pos = nav.navId
+      const needLogin = nav.needLogin
       if (needLogin) {
-        const token = this.getToken()
-        if (token != null) {
+        const isLogin = this.isLogin()
+        if (isLogin) {
           this.setPosition(pos)
         }
+        RouterUtil.pushOrLogin(nav.path)
       } else {
         this.setPosition(pos)
+        RouterUtil.pushOrLogin(nav.path, false)
       }
     }
   }

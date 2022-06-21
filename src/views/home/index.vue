@@ -7,14 +7,14 @@
       </template>
       <template #right>
         <van-badge content="99+">
-          <van-icon class="nav-item" name="envelop-o" @click="$router.push('/letter/')" />
+          <van-icon class="nav-item" name="envelop-o" @click="toLetterView" />
         </van-badge>
-        <van-icon class="nav-item" name="edit" @click="$router.push('/article/write')"/>
+        <van-icon class="nav-item" name="edit" @click="toArticleWriteView"/>
       </template>
     </van-nav-bar>
     <!-- 频道列表 -->
     <van-tabs  swipeable>
-      <van-tab v-for="item in channels" :title="item.channelName" :key="item.channelId">
+      <van-tab v-for="item in channels" :title="item.itemLabel" :key="item.itemValue">
         <home-article-list class="home-list" :channel="item"></home-article-list>
       </van-tab>
     </van-tabs>
@@ -24,26 +24,36 @@
 
 <script>
 
-import { channelList } from '@/data/channelJson'
 import HomeArticleList from '@v/home/components/HomeArticleList'
+import { mapGetters } from 'vuex'
+import * as RouterUtil from '@u/RouterUtil'
+import { getArticleChannel } from '@/api/channel'
 export default {
   components: {
     HomeArticleList
   },
-  data () {
-    return {
-      channels: {
-        type: Array,
-        require: true
-      }
-    }
-  },
   created () {
     this.getArticleChannel()
   },
+  data () {
+    return {
+      channels: null
+    }
+  },
+
   methods: {
+    ...mapGetters([
+      'isLogin'
+    ]),
+    toLetterView () {
+      RouterUtil.push('/letter/')
+    },
+    toArticleWriteView () {
+      RouterUtil.push('/article/write')
+    },
     async getArticleChannel () {
-      this.channels = channelList
+      const res = await getArticleChannel()
+      this.channels = res.result
     }
   }
 }
