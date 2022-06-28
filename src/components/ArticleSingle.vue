@@ -217,10 +217,7 @@ export default {
         this.commentWriteStatus.isShowingWrite = true
         return
       }
-      this.$router.push('article/detail')
-      this.setArticleView({
-        ...this.article
-      })
+      this.$router.push({ path: 'article/detail', query: { articleId: this.article.articleId } })
     },
     // 不感兴趣按钮
     dislikeArticle () {

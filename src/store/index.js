@@ -7,9 +7,6 @@ Vue.use(Vuex)
 
 const TOKEN_KEY = 'meet-token'
 const USER_INFO = 'userInfo'
-const ALBUM_VIEW = 'album-view'
-const ARTICLE_VIEW = 'article-view'
-const OTHER_VIEW = 'other-view'
 const SELECTED_LIMIT = 'select-limit'
 export default new Vuex.Store({
   state: {
@@ -21,9 +18,6 @@ export default new Vuex.Store({
     showSuccessToast: false,
     token: getCookie(TOKEN_KEY),
     userInfo: getItem(USER_INFO),
-    albumView: getItem(ALBUM_VIEW),
-    articleView: getItem(ARTICLE_VIEW),
-    otherView: getItem(OTHER_VIEW),
     localArticle: {
       content: '',
       limitId: 0
@@ -65,18 +59,6 @@ export default new Vuex.Store({
     },
     setLimits (state, limits) {
       state.limits = limits
-    },
-    setAlbumView (state, albumView) {
-      state.albumView = albumView
-      setItem(ALBUM_VIEW, albumView)
-    },
-    setArticleView (state, articleView) {
-      state.articleView = articleView
-      setItem(ARTICLE_VIEW, articleView)
-    },
-    setOtherView (state, otherView) {
-      state.otherView = otherView
-      setItem(OTHER_VIEW, otherView)
     },
     // 移除cookies中token
     removeToken (state) {

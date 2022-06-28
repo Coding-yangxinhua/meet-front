@@ -1,35 +1,49 @@
 <template>
   <div>
-    <van-nav-bar :title="album.title" left-arrow @click-left="$router.back()"/>
-    <van-row class="photos-row">
-      <van-col class="photos-col">
-        <van-image
-          v-for="(photo, index) in getFirst" :key="photo.photoId" @click="showImage(index * 3)"
-          class="photo-img"
-          fit="cover"
-          lazy-load
-          :src="photo.url"/>
-      </van-col>
-      <van-col class="photos-col" >
-        <van-image
-          v-for="(photo, index) in getSec" :key="photo.photoId" @click="showImage(1 + index * 3)"
-          class="photo-img"
-          fit="cover"
-          lazy-load
-          :src="photo.url"/>
-      </van-col>
-      <van-col class="photos-col">
-        <van-image
-          v-for="(photo, index) in getThird" :key="photo.photoId" @click="showImage(2 + index * 3)"
-          class="photo-img"
-          fit="cover"
-          lazy-load
-          :src="photo.url"/>
-      </van-col>
-    </van-row>
+    <own-image-preview :show-deleted-text="true"
+                       :images="photos.map(photo => photo.url)"
+                       :show-image-preview.sync="show"
+                       @onDeleted="onDeleted"
+                       :pos.sync="pos"></own-image-preview>
+    <van-nav-bar fixed placeholder v-if="album != null" :title="album.title"  left-arrow @click-left="$router.back()"/>
+
+    <van-list
+      v-model="isLoading"
+      :finished="isFinished"
+      finished-text="没有更多了"
+      @load="onLoad"
+    >
+      <van-row class="photos-row">
+        <van-col class="photos-col">
+          <van-image
+            v-for="(photo, index) in getFirst" :key="photo.photoId" @click="showImage(index * 3)"
+            class="photo-img"
+            lazy-load
+            :src="photo.url"/>
+        </van-col>
+        <van-col class="photos-col" >
+          <van-image
+            v-for="(photo, index) in getSec" :key="photo.photoId" @click="showImage(1 + index * 3)"
+            class="photo-img"
+            lazy-load
+            :src="photo.url"/>
+        </van-col>
+        <van-col class="photos-col">
+          <van-image
+            v-for="(photo, index) in getThird" :key="photo.photoId" @click="showImage(2 + index * 3)"
+            class="photo-img"
+            lazy-load
+            :src="photo.url"/>
+        </van-col>
+      </van-row>
+    </van-list>
+    <transition name="van-slide-up">
+      <div v-show="showOption">
+      </div>
+    </transition>
     <van-uploader
       multiple
-      v-if="selfId === album.userId || album.userId === null"
+      v-if="album != null && album.self"
       class="upload-photo-pane"
       :after-read="toPhotoUpload">
       <div class="upload-photo-btn">
@@ -41,21 +55,19 @@
 
 <script>
 
-import { ImagePreview, Lazyload } from 'vant'
+import { Lazyload } from 'vant'
 import Vue from 'vue'
-import { getPhotoListByAlbumId } from '@/api/album'
+import OwnImagePreview from '@c/OwnImagePreview'
+import { deleteAlbumBatch, getAlbumById, getPhotoListByAlbumId } from '@/api/album'
 Vue.use(Lazyload)
 export default {
   name: 'album-detail',
-  components: {
-    [ImagePreview.Component.name]: ImagePreview.Component
-  },
+  components: { OwnImagePreview },
   created () {
-    this.album = this.$store.state.albumView
-    if (this.album === null) {
-      this.$router.back()
+    this.album = {
+      albumId: this.$route.query.albumId
     }
-    this.getPhotosByAlbum()
+    this.getAlbum(this.album.albumId)
   },
   computed: {
     getFirst () {
@@ -77,21 +89,24 @@ export default {
   data () {
     return {
       album: null,
-      selfId: this.$store.state.userInfo.userId,
-      userId: null,
       pageInfo: {
         page: 1,
         size: 10
       },
-      photos: []
+      showOption: true,
+      show: false,
+      photos: [],
+      pos: 0,
+      isLoading: false,
+      isFinished: false
     }
   },
   methods: {
     showImage (pos) {
-      ImagePreview({
-        images: this.getPhotoUrls,
-        startPosition: parseInt(pos)
-      })
+      console.log('点击')
+      console.log(this.photos)
+      this.pos = parseInt(pos)
+      this.show = true
     },
     toPhotoUpload (files) {
       this.$router.push({
@@ -102,16 +117,44 @@ export default {
         }
       })
     },
-    async getPhotosByAlbum () {
-      const photoId = this.photos.length > 0 ? this.photos[length - 1].photoId : null
+    async getAlbum (albumId) {
+      const res = await getAlbumById(albumId)
+      if (res.code === 200) {
+        this.album = res.result
+      }
+    },
+    async getPhotosByAlbum (albumId) {
+      const length = this.photos.length
+      const photoId = length > 0 ? this.photos[length - 1].albumPhotoId : null
       const res = await getPhotoListByAlbumId({
-        albumId: this.album.albumId,
+        albumId,
         photoId,
-        userId: this.userId,
         ...this.pageInfo
       })
       if (res.code === 200) {
-        this.photos = res.result.records
+        this.photos.push(...res.result.records)
+        this.isLoading = false
+        this.pageInfo.page++
+        if (res.result.records.length === 0) {
+          this.isFinished = true
+        }
+      }
+    },
+    onLoad () {
+      this.getPhotosByAlbum(this.album.albumId)
+    },
+    swipeDown (e) {
+      console.log('down')
+      console.log(e)
+    },
+    swipeUp (e) {
+      console.log('up')
+    },
+    async onDeleted (pos) {
+      const albumIds = [this.photos[pos].albumPhotoId]
+      const res = await deleteAlbumBatch(albumIds)
+      if (res.code === 200) {
+        this.photos.splice(pos, 1)
       }
     }
   }
@@ -129,6 +172,10 @@ export default {
       width: 115px;
     }
   }
+}
+.album-list-container {
+  height: 766px;
+  overflow: scroll;
 }
 .upload-photo-pane {
   position: absolute;
@@ -149,5 +196,8 @@ export default {
     background-color: lightblue;
   }
 }
-
+.touch {
+  height: 766px;
+  touch-action: pan-y !important;
+}
 </style>

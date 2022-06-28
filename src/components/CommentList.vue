@@ -42,16 +42,13 @@ export default {
       return this.orders.filter(order => order.orderId === this.nowOrderId)
     }
   },
-  created () {
-    const articleView = this.$store.state.articleView
-    if (articleView === null) {
-      this.$router.back()
+  props: {
+    articleId: {
+      require: true
     }
-    this.articleId = articleView.articleId
   },
   data () {
     return {
-      articleId: null,
       pageInfo: {
         page: 1,
         size: 10

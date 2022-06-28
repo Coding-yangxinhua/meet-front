@@ -16,7 +16,7 @@
       v-model="active">
       <van-tab title="转发"></van-tab>
       <van-tab title="评论">
-        <comment-list></comment-list>
+        <comment-list :articleId="articleId"></comment-list>
       </van-tab>
       <van-tab disabled title=""></van-tab>
       <van-tab title="点赞">
@@ -36,20 +36,21 @@ export default {
   name: 'article-detail',
   components: { CommentList, ArticleSingle },
   created () {
-    this.article = this.$store.state.articleView
-    this.getArticleDetail()
+    this.articleId = this.$route.query.articleId
+    this.getArticleDetail(this.articleId)
   },
   data () {
     return {
+      articleId: null,
       active: 1,
       article: null
     }
   },
 
   methods: {
-    async getArticleDetail () {
+    async getArticleDetail (articleId) {
       const res = await getArticleById({
-        articleId: this.article.articleId
+        articleId
       })
       if (res.code === 200) {
         this.article = res.result

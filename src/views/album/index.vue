@@ -1,6 +1,6 @@
 <template>
   <div class="album-container">
-    <van-nav-bar title="相册" left-arrow @click-left="saveBeforeBack()" />
+    <van-nav-bar title="相册" left-arrow @click-left="$router.back()" />
     <van-row class="albums-row" type="flex" justify="space-between">
       <van-col class="albums-col" @click="toCreateAlbum" v-if="userId == null">
         <div class="create-album flex">
@@ -8,7 +8,7 @@
           <div>新建相册</div>
         </div>
       </van-col>
-      <van-col class="albums-col" v-for="album in albums"  :key="album.albumId" @click="toAlbumDetail(album.albumId, album.title)">
+      <van-col class="albums-col" v-for="album in albums"  :key="album.albumId" @click="toAlbumDetail(album.albumId)">
         <album-single :photo-album="album"></album-single>
       </van-col>
     </van-row>
@@ -18,7 +18,6 @@
 <script>
 
 import AlbumSingle from '../../components/AlbumSingle'
-import { mapMutations } from 'vuex'
 import { getAlbumsByUid } from '@/api/album'
 export default {
   name: 'album-list',
@@ -26,7 +25,7 @@ export default {
     AlbumSingle
   },
   created () {
-    this.userId = this.$store.state.otherView.userId
+    this.userId = this.$route.query.userId
     this.getAlbumListByUid()
   },
   data () {
@@ -36,10 +35,6 @@ export default {
     }
   },
   methods: {
-    ...mapMutations([
-      'setAlbum',
-      'setAlbumView'
-    ]),
     async getAlbumListByUid () {
       const res = await getAlbumsByUid(this.userId)
       if (res.code === 200) {
@@ -51,13 +46,8 @@ export default {
       this.$router.push('/album/create')
     },
     // 去相册详情
-    toAlbumDetail (albumId, title) {
-      this.setAlbumView({
-        albumId,
-        title,
-        userId: this.userId
-      })
-      this.$router.push('album/detail')
+    toAlbumDetail (albumId) {
+      this.$router.push({ path: 'album/detail', query: { albumId } })
     }
   }
 }

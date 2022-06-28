@@ -1,7 +1,7 @@
 <template>
   <div class="own-image-preview-container"
-       v-show="showImagePreview">
-    <teleport to="#app">
+       >
+    <teleport to="#app" v-show="showImagePreview">
       <v-touch @press="press">
         <van-image-preview
           v-model="show"
@@ -92,9 +92,18 @@ export default {
     },
     onDeleted () {
       this.$emit('onDeleted', this.pos)
+      this.showImagePreview = false
     },
     changeImagePreview (v) {
       this.$emit('update:showImagePreview', v)
+    }
+  },
+  watch: {
+    show (value) {
+      if (value) {
+        this.showImagePreview = true
+      }
+      this.$emit('update:show', false)
     }
   }
 }

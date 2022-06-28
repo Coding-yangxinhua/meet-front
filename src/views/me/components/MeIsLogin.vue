@@ -3,14 +3,16 @@
     <van-nav-bar class="tm-nav-bar"
                  :title="user.nickname"
     />
-    <div class="base">
+    <image-cropper :show.sync="showImageCropper" aspect-ratio="1.5" @crop="crop"></image-cropper>
+    <div class="base" :style="backImage !== undefined? backImage: ''" @click.prevent="showImageCropper=true">
       <!--  用户信息框  -->
-      <van-row class="base-info">
+      <van-row class="base-info" @click.stop>
         <!--  用户头像  -->
         <van-col span="8" class="flex j-center avatar">
           <own-image
             class="user-avatar"
             :src="user.avatar"
+            :round="true"
           ></own-image>
         </van-col>
         <!--  用户基础信息  -->
@@ -67,16 +69,22 @@ import meHome from '@/views/me/components/MeHome'
 import meArticle from '@/views/me/components/MeArticle'
 import meHistory from '@/views/me/components/MeHistory'
 import ownImage from '@c/OwnImage'
+import ImageCropper from '@c/ImageCropper'
+import { base64ToFile, file2Base64, getBase64Type } from '@u/OwnUtil'
+import { updateBackground } from '@/api/user'
 
 export default {
   name: 'me-is-login',
   components: {
+    ImageCropper,
     meHome,
     meArticle,
     meHistory,
     ownImage
   },
   created () {
+    this.backImage.backgroundImage = `url(${this.user.background})`
+    console.log(this.backImage)
   },
   props: {
     user: {
@@ -86,7 +94,14 @@ export default {
   },
   data () {
     return {
-      active: 0
+      showImageCropper: false,
+      image: null,
+      active: 0,
+      backImage: {
+        backgroundRepeat: 'no-repeat',
+        backgroundImage: null,
+        backgroundSize: 'cover'
+      }
     }
   },
   methods: {
@@ -99,6 +114,24 @@ export default {
           nickname
         }
       })
+    },
+    async changeBackground (e) {
+      const file = e.target.files[0]
+      this.image = await file2Base64(file)
+      this.showImageCropper = true
+    },
+    async crop (src) {
+      this.showImageCropper = false
+      const name = 'background' + getBase64Type(src, '.')
+      // 上传图片
+      const file = {
+        file: base64ToFile(src, name)
+      }
+      const res = await updateBackground(file)
+      console.log(res)
+      if (res.code === 200) {
+        this.backImage.backgroundImage = `url(${src})`
+      }
     }
   }
 }
@@ -107,13 +140,18 @@ export default {
 <style scoped lang="scss">
 .meIsLogin {
   .base {
+    position: relative;
     box-sizing: border-box;
     justify-content: end;
     height: 260px;
     // 登录
     .base-info{
+      padding: 5px 0;
+      background-image: linear-gradient(rgba(255, 255, 255, 0.8), rgba(247, 247, 247, 1));
+      bottom: 0;
+      width: 100%;
+      position: absolute;
       box-sizing: border-box;
-      padding-top: 150px;
     }
     // 头像部分
     .avatar{
@@ -121,6 +159,7 @@ export default {
         width: 75px;
         height: 75px;
         border: 1px solid white;
+        border-radius: 50%;
       }
     }
     // 信息部分
@@ -135,9 +174,6 @@ export default {
         color: #7D7D7D;
         font-size: 13px;
       }
-    }
-    .van-row{
-      background-color: #FAFAFA;
     }
     // 编辑部分
     .edit-pane{

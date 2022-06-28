@@ -21,7 +21,7 @@ export default {
     round: {
       require: false,
       default () {
-        return true
+        return false
       }
     },
     fit: {

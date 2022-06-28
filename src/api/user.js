@@ -91,3 +91,17 @@ export const updateAvatar = (file) => {
     data: formData
   })
 }
+
+/// 更新用户背景图
+export const updateBackground = (file) => {
+  const formData = new FormData()
+  formData.append('file', file.file)
+  return request({
+    method: 'POST',
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    },
+    url: 'user/updateBackground',
+    data: formData
+  })
+}

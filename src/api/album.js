@@ -9,6 +9,15 @@ export const getAlbumsByUid = userId => {
   })
 }
 
+export const getAlbumById = albumId => {
+  return request({
+    url: 'album/getAlbumById',
+    params: {
+      albumId
+    }
+  })
+}
+
 export const getPhotoListByAlbumId = params => {
   return request({
     url: 'albumPhoto/list',
@@ -37,5 +46,13 @@ export const createAlbum = (album) => {
     method: 'POST',
     url: 'album/create',
     data: album
+  })
+}
+
+export const deleteAlbumBatch = (albumIds) => {
+  return request({
+    method: 'POST',
+    url: 'albumPhoto/deleteBatch',
+    data: albumIds
   })
 }

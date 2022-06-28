@@ -12,6 +12,7 @@
   "dependencies": {
     "axios": "^0.21.1",
     "core-js": "^3.6.5",
+    "cropperjs": "^1.5.12",
     "js-cookie": "^3.0.1",
     "js-cookies": "^1.0.4",
     "postcss-px-to-viewport": "^1.1.1",

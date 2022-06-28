@@ -1,29 +1,34 @@
 <template>
-  <div>
-    <van-cell v-model="article.content"></van-cell>
-    <emoji-tool-bar :showEmojiBox="this.showEmojiBox"
-                    :pos.sync="inputPos"
-                    :input.sync="article.content"
-    >
-    </emoji-tool-bar>
+  <div id="demo">
+    <div>
+      <div style="margin-top:20px;">
+        <input type="file" id="change" accept="image" @change="show" />
+
+        <image-cropper :show.sync="showImageCropper" :src.sync="src"></image-cropper>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import EmojiToolBar from '@c/EmojiToolBar'
-
+import ImageCropper from '@c/ImageCropper'
+import { file2Base64 } from '@u/OwnUtil'
 export default {
-  name: 'test',
-  components: { EmojiToolBar },
+  components: { ImageCropper },
   data () {
     return {
-      showEmojiBox: true,
-      inputPos: 0,
-      article: {}
+      showImageCropper: false,
+      src: null
     }
   },
   methods: {
+    async show (e) {
+      const file = e.target.files[0]
+      this.src = await file2Base64(file)
+      this.showImageCropper = true
+    }
   }
+
 }
 </script>
 
